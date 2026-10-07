@@ -43,7 +43,12 @@ param firewallTier string = 'Standard'
 param firewallPublicIpCount int = 1
 
 @description('Firewall availability zones. Select supported zones for the hub region.')
-param firewallZones (1 | 2 | 3)[] = []
+@allowed([
+  1
+  2
+  3
+])
+param firewallZones array = []
 
 @description('Name of the firewall policy created by this blueprint.')
 param firewallPolicyName string = '${hubName}-policy'

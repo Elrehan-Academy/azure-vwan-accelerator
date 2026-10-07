@@ -1,12 +1,11 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "languageVersion": "2.0",
   "contentVersion": "1.0.0.0",
   "metadata": {
     "_generator": {
       "name": "bicep",
       "version": "0.45.15.27210",
-      "templateHash": "12386593373354142108"
+      "templateHash": "8941736597880775169"
     }
   },
   "parameters": {
@@ -87,12 +86,12 @@
     },
     "firewallZones": {
       "type": "array",
+      "defaultValue": [],
       "allowedValues": [
         1,
         2,
         3
       ],
-      "defaultValue": [],
       "metadata": {
         "description": "Firewall availability zones. Select supported zones for the hub region."
       }
@@ -257,8 +256,8 @@
     "privateInspection": "[or(equals(parameters('inspectionMode'), 'Private'), equals(parameters('inspectionMode'), 'Both'))]",
     "internetInspection": "[or(equals(parameters('inspectionMode'), 'Internet'), equals(parameters('inspectionMode'), 'Both'))]"
   },
-  "resources": {
-    "workspace": {
+  "resources": [
+    {
       "condition": "[variables('loggingEnabled')]",
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2023-09-01",
@@ -277,13 +276,7 @@
         "publicNetworkAccessForQuery": "Enabled"
       }
     },
-    "firewall": {
-      "existing": true,
-      "type": "Microsoft.Network/azureFirewalls",
-      "apiVersion": "2025-05-01",
-      "name": "[parameters('firewallName')]"
-    },
-    "firewallDiagnostics": {
+    {
       "condition": "[variables('loggingEnabled')]",
       "type": "Microsoft.Insights/diagnosticSettings",
       "apiVersion": "2021-05-01-preview",
@@ -306,11 +299,11 @@
         ]
       },
       "dependsOn": [
-        "network",
-        "workspace"
+        "[resourceId('Microsoft.Resources/deployments', 'single-hub-network')]",
+        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
       ]
     },
-    "policy": {
+    {
       "condition": "[variables('firewallEnabled')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
@@ -1276,7 +1269,7 @@
         }
       }
     },
-    "network": {
+    {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
       "name": "single-hub-network",
@@ -1298,7 +1291,7 @@
                 "hubName": "[parameters('hubName')]",
                 "hubLocation": "[parameters('hubLocation')]",
                 "hubAddressPrefix": "[parameters('hubAddressPrefix')]",
-                "secureHubParameters": "[if(variables('firewallEnabled'), union(createObject('deploySecureHub', true(), 'azureFirewallName', parameters('firewallName'), 'azureFirewallSku', parameters('firewallTier'), 'azureFirewallPublicIPCount', parameters('firewallPublicIpCount'), 'availabilityZones', parameters('firewallZones'), 'firewallPolicyResourceId', reference('policy').outputs.resourceId.value), if(or(variables('privateInspection'), variables('internetInspection')), createObject('routingIntent', createObject('privateToFirewall', variables('privateInspection'), 'internetToFirewall', variables('internetInspection'))), createObject())), createObject('deploySecureHub', false()))]",
+                "secureHubParameters": "[if(variables('firewallEnabled'), union(createObject('deploySecureHub', true(), 'azureFirewallName', parameters('firewallName'), 'azureFirewallSku', parameters('firewallTier'), 'azureFirewallPublicIPCount', parameters('firewallPublicIpCount'), 'availabilityZones', parameters('firewallZones'), 'firewallPolicyResourceId', reference(resourceId('Microsoft.Resources/deployments', 'single-hub-policy'), '2025-04-01').outputs.resourceId.value), if(or(variables('privateInspection'), variables('internetInspection')), createObject('routingIntent', createObject('privateToFirewall', variables('privateInspection'), 'internetToFirewall', variables('internetInspection'))), createObject())), createObject('deploySecureHub', false()))]",
                 "expressRouteParameters": {
                   "deployExpressRouteGateway": "[parameters('deployExpressRouteGateway')]",
                   "expressRouteGatewayName": "[parameters('expressRouteGatewayName')]",
@@ -8795,10 +8788,10 @@
         }
       },
       "dependsOn": [
-        "policy"
+        "[resourceId('Microsoft.Resources/deployments', 'single-hub-policy')]"
       ]
     },
-    "observability": {
+    {
       "condition": "[and(variables('loggingEnabled'), parameters('enableWorkbook'))]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
@@ -8909,19 +8902,19 @@
         }
       },
       "dependsOn": [
-        "firewallDiagnostics",
-        "workspace"
+        "[extensionResourceId(resourceId('Microsoft.Network/azureFirewalls', parameters('firewallName')), 'Microsoft.Insights/diagnosticSettings', 'firewall-observability')]",
+        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
       ]
     }
-  },
+  ],
   "outputs": {
     "virtualWanResourceId": {
       "type": "string",
-      "value": "[reference('network').outputs.virtualWanResourceId.value]"
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'single-hub-network'), '2025-04-01').outputs.virtualWanResourceId.value]"
     },
     "virtualHubs": {
       "type": "array",
-      "value": "[reference('network').outputs.virtualHubs.value]"
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'single-hub-network'), '2025-04-01').outputs.virtualHubs.value]"
     },
     "firewallResourceId": {
       "type": "string",
@@ -8929,7 +8922,7 @@
     },
     "firewallPolicyResourceId": {
       "type": "string",
-      "value": "[if(variables('firewallEnabled'), reference('policy').outputs.resourceId.value, '')]"
+      "value": "[if(variables('firewallEnabled'), reference(resourceId('Microsoft.Resources/deployments', 'single-hub-policy'), '2025-04-01').outputs.resourceId.value, '')]"
     },
     "workspaceResourceId": {
       "type": "string",
@@ -8941,11 +8934,11 @@
     },
     "workbookResourceId": {
       "type": "string",
-      "value": "[if(and(variables('loggingEnabled'), parameters('enableWorkbook')), reference('observability').outputs.resourceId.value, '')]"
+      "value": "[if(and(variables('loggingEnabled'), parameters('enableWorkbook')), reference(resourceId('Microsoft.Resources/deployments', 'single-hub-observability'), '2025-04-01').outputs.resourceId.value, '')]"
     },
     "observabilityUrl": {
       "type": "string",
-      "value": "[if(and(variables('loggingEnabled'), parameters('enableWorkbook')), reference('observability').outputs.portalUrl.value, '')]"
+      "value": "[if(and(variables('loggingEnabled'), parameters('enableWorkbook')), reference(resourceId('Microsoft.Resources/deployments', 'single-hub-observability'), '2025-04-01').outputs.portalUrl.value, '')]"
     }
   }
 }
