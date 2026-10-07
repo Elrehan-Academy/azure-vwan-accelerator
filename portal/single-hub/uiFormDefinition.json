@@ -10,6 +10,15 @@
           "label": "Basics",
           "elements": [
             {
+              "name": "solutionIntroduction",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": true,
+              "options": {
+                "icon": "Info",
+                "text": "Created and maintained by Mohamed Elrehan for Elrehan Academy. Deploy a configurable Standard Azure Virtual WAN with one hub, optional Azure Firewall, monitoring, VPN and ExpressRoute gateways. Built using Microsoft Azure Verified Modules and an adapted Microsoft Azure Firewall workbook."
+              }
+            },
+            {
               "name": "resourceScope",
               "type": "Microsoft.Common.ResourceScope",
               "location": {
