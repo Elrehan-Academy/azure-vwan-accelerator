@@ -77,6 +77,8 @@ currently provided. Optional test resources will have a separate lifecycle.
 
 ## Documentation
 
+Read the [solution and configuration guide](docs/CONFIGURATION.md) for the architecture diagram, components, inputs, and current limitations.
+
 The deployment guides will cover:
 
 - **Deployment:** prerequisites, portal inputs, and expected results.
