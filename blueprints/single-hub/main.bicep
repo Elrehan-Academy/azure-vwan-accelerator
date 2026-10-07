@@ -79,6 +79,9 @@ param workspaceLocation string = hubLocation
 @maxValue(730)
 param logRetentionDays int = 30
 
+@description('Deploy the firewall workbook when firewall logging is enabled.')
+param enableWorkbook bool = true
+
 @description('Resource tags such as owner, environment, and cost centre.')
 param tags object = {}
 
@@ -193,3 +196,20 @@ output firewallResourceId string = firewallEnabled ? firewall.id : ''
 output firewallPolicyResourceId string = firewallEnabled ? policy!.outputs.resourceId : ''
 output workspaceResourceId string = loggingEnabled ? workspace!.id : ''
 output selectedInspectionMode string = inspectionMode
+
+module observability '../../modules/observability/main.bicep' = if (loggingEnabled && enableWorkbook) {
+  name: 'single-hub-observability'
+  params: {
+    workbookName: guid(resourceGroup().id, virtualWanName, 'firewall-observability')
+    location: workspaceLocation
+    workspaceResourceId: workspace!.id
+    firewallResourceId: firewall.id
+    tags: tags
+  }
+  dependsOn: [
+    firewallDiagnostics
+  ]
+}
+
+output workbookResourceId string = loggingEnabled && enableWorkbook ? observability!.outputs.resourceId : ''
+output observabilityUrl string = loggingEnabled && enableWorkbook ? observability!.outputs.portalUrl : ''

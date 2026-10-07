@@ -1,7 +1,11 @@
 # Azure Virtual WAN Accelerator
 
-Azure Virtual WAN deployment blueprints by **Mohamed Elrehan** for
-**Elrehan Academy**.
+Created and maintained by **Mohamed Elrehan** for **Elrehan Academy**.
+
+Built using [Microsoft Azure Verified Modules](https://azure.github.io/Azure-Verified-Modules/)
+and adapted from Microsoft's Azure Firewall Monitor Workbook.
+Workbook source revision, modifications, and license are recorded in
+[the source attribution](modules/observability/SOURCE.md).
 
 Choose a regional or multi-region network, configure its settings, and deploy
 into your own Azure subscription through the Azure portal.
