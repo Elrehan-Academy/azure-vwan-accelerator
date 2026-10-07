@@ -14,9 +14,9 @@ Workbook source revision, modifications, and license are recorded in
 Choose a regional or multi-region network, configure its settings, and deploy
 into your own Azure subscription through the Azure portal.
 
-**Status:** Under development. Deployable templates and portal forms are not
-available yet. Production suitability will be documented for validated
-configurations.
+**Status:** Under development. The single-hub template compiles and a draft
+portal form is available. Portal and live deployment validation remain
+pending. Production suitability has not been established.
 
 ## Choose your blueprint
 
@@ -26,6 +26,16 @@ configurations.
 | Multi-region secured vWAN | 2 by default; expandable to 4 | Connectivity and regional inspection across multiple regions |
 
 Both blueprints will use shared Bicep modules.
+
+## Deploy Single Hub
+
+**Development preview:** portal behavior and live deployment validation remain pending. Deployment creates billable Azure resources.
+
+[![Deploy Single Hub to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2F312f1d175f4995632a3fe88cadd5ada313f38f60%2Fportal%2Fsingle-hub%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2F312f1d175f4995632a3fe88cadd5ada313f38f60%2Fportal%2Fsingle-hub%2FuiFormDefinition.json)
+
+For the initial form check, review the inputs without selecting Create.
+
+Multi-Hub deployment is not available yet.
 
 ## Solution components
 
@@ -53,7 +63,7 @@ Multiple hubs alone do not provide application disaster recovery.
 5. Deploy and check the deployment outputs.
 6. Verify connectivity, firewall decisions, and monitoring.
 
-Deployment buttons will be published with the validated templates.
+The Single Hub button is available for development testing. The Multi-Hub button will be added when that blueprint is available.
 
 ## New deployments and updates
 
