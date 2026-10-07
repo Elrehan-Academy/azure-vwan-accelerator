@@ -34,3 +34,13 @@ param enableLogging = true
 param workspaceName = 'log-example-weu'
 param workspaceLocation = 'westeurope'
 param logRetentionDays = 30
+
+// Optional hybrid gateways. Connections are configured separately.
+param deployVpnGateway = false
+param vpnGatewayName = 'vpngw-example-weu'
+param vpnScaleUnits = 1
+
+param deployExpressRouteGateway = false
+param expressRouteGatewayName = 'ergw-example-weu'
+param expressRouteMinScaleUnits = 1
+param expressRouteMaxScaleUnits = 2

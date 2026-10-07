@@ -82,6 +82,47 @@ param logRetentionDays int = 30
 @description('Deploy the firewall workbook when firewall logging is enabled.')
 param enableWorkbook bool = true
 
+@description('Create a site-to-site VPN gateway. Branch connections are configured separately.')
+param deployVpnGateway bool = false
+
+@description('Site-to-site VPN gateway name.')
+param vpnGatewayName string = '${hubName}-vpn'
+
+@description('Site-to-site VPN gateway scale units.')
+@allowed([
+  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+  10
+  20
+  30
+  40
+  50
+])
+param vpnScaleUnits int = 1
+
+@description('Create an ExpressRoute gateway. Circuit connections are configured separately.')
+param deployExpressRouteGateway bool = false
+
+@description('ExpressRoute gateway name.')
+param expressRouteGatewayName string = '${hubName}-er'
+
+@description('Minimum ExpressRoute gateway autoscale units.')
+@minValue(1)
+@maxValue(10)
+param expressRouteMinScaleUnits int = 1
+
+@description('Maximum ExpressRoute gateway autoscale units. Must be at least the minimum.')
+@minValue(1)
+@maxValue(10)
+param expressRouteMaxScaleUnits int = 2
+
 @description('Resource tags such as owner, environment, and cost centre.')
 param tags object = {}
 
@@ -148,10 +189,15 @@ module network '../../modules/network.bicep' = {
         hubAddressPrefix: hubAddressPrefix
         secureHubParameters: secureHub
         expressRouteParameters: {
-          deployExpressRouteGateway: false
+          deployExpressRouteGateway: deployExpressRouteGateway
+          expressRouteGatewayName: expressRouteGatewayName
+          autoScaleConfigurationBoundsMin: expressRouteMinScaleUnits
+          autoScaleConfigurationBoundsMax: expressRouteMaxScaleUnits
         }
         s2sVpnParameters: {
-          deployS2SVpnGateway: false
+          deployS2SVpnGateway: deployVpnGateway
+          vpnGatewayName: vpnGatewayName
+          vpnGatewayScaleUnit: vpnScaleUnits
         }
         p2sVpnParameters: {
           deployP2SVpnGateway: false

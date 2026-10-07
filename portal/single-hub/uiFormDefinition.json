@@ -1,0 +1,583 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2021-09-09/uiFormDefinition.schema.json#",
+  "view": {
+    "kind": "Form",
+    "properties": {
+      "title": "Elrehan Academy \u2014 Azure vWAN Single Hub",
+      "steps": [
+        {
+          "name": "basics",
+          "label": "Basics",
+          "elements": [
+            {
+              "name": "resourceScope",
+              "type": "Microsoft.Common.ResourceScope",
+              "location": {
+                "resourceTypes": [
+                  "microsoft.resources/resourcegroups"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "network",
+          "label": "Network",
+          "elements": [
+            {
+              "name": "virtualWanName",
+              "label": "Virtual wan name",
+              "toolTip": "Name of the Standard Virtual WAN.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": ""
+            },
+            {
+              "name": "virtualWanLocation",
+              "label": "Virtual wan location",
+              "toolTip": "Location of the Virtual WAN resource.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": "[steps('basics').resourceScope.location.name]"
+            },
+            {
+              "name": "hubName",
+              "label": "Hub name",
+              "toolTip": "Name of the virtual hub.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": ""
+            },
+            {
+              "name": "hubLocation",
+              "label": "Hub location",
+              "toolTip": "Azure region for the hub.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": "[steps('basics').resourceScope.location.name]"
+            },
+            {
+              "name": "hubAddressPrefix",
+              "label": "Hub address prefix",
+              "toolTip": "Hub IPv4 CIDR. Must not overlap connected networks; /24 or larger.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": "10.250.0.0/24"
+            }
+          ]
+        },
+        {
+          "name": "security",
+          "label": "Security",
+          "elements": [
+            {
+              "name": "inspectionMode",
+              "label": "Inspection mode",
+              "toolTip": "Disabled creates no firewall. FirewallOnly creates a firewall without routing intent. Other modes enable the selected inspection paths.",
+              "visible": true,
+              "type": "Microsoft.Common.DropDown",
+              "defaultValue": "Both",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Disabled",
+                    "value": "Disabled"
+                  },
+                  {
+                    "label": "FirewallOnly",
+                    "value": "FirewallOnly"
+                  },
+                  {
+                    "label": "Private",
+                    "value": "Private"
+                  },
+                  {
+                    "label": "Internet",
+                    "value": "Internet"
+                  },
+                  {
+                    "label": "Both",
+                    "value": "Both"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "firewallName",
+              "label": "Firewall name",
+              "toolTip": "Name of the firewall.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": "[concat(steps('network').hubName, '-fw')]"
+            },
+            {
+              "name": "firewallTier",
+              "label": "Firewall tier",
+              "toolTip": "Firewall and policy tier. Premium features require additional configuration.",
+              "visible": true,
+              "type": "Microsoft.Common.DropDown",
+              "defaultValue": "Standard",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Standard",
+                    "value": "Standard"
+                  },
+                  {
+                    "label": "Premium",
+                    "value": "Premium"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "firewallPublicIpCount",
+              "label": "Firewall public ip count",
+              "toolTip": "Number of firewall public IP addresses.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true,
+                "regex": "^[0-9]+$",
+                "validationMessage": "Enter a whole number.",
+                "validations": [
+                  {
+                    "isValid": "[and(greaterOrEquals(int(steps('security').firewallPublicIpCount), 1), lessOrEquals(int(steps('security').firewallPublicIpCount), 100))]",
+                    "message": "Enter a value from 1 to 100."
+                  }
+                ]
+              },
+              "defaultValue": "1"
+            },
+            {
+              "name": "firewallZones",
+              "label": "Firewall zones \u2014 advanced JSON",
+              "toolTip": "Firewall availability zones. Select supported zones for the hub region.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": "[]"
+            },
+            {
+              "name": "firewallPolicyName",
+              "label": "Firewall policy name",
+              "toolTip": "Name of the firewall policy created by this blueprint.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": "[concat(steps('network').hubName, '-policy')]"
+            },
+            {
+              "name": "firewallPolicyLocation",
+              "label": "Firewall policy location",
+              "toolTip": "Policy location, independently configurable from the hub location.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": "[steps('network').hubLocation]"
+            },
+            {
+              "name": "threatIntelMode",
+              "label": "Threat intel mode",
+              "toolTip": "Threat intelligence action.",
+              "visible": true,
+              "type": "Microsoft.Common.DropDown",
+              "defaultValue": "Deny",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Alert",
+                    "value": "Alert"
+                  },
+                  {
+                    "label": "Deny",
+                    "value": "Deny"
+                  },
+                  {
+                    "label": "Off",
+                    "value": "Off"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "enableDnsProxy",
+              "label": "Enable dns proxy",
+              "toolTip": "Enable firewall DNS proxy.",
+              "visible": true,
+              "type": "Microsoft.Common.DropDown",
+              "defaultValue": "false",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "true",
+                    "value": "true"
+                  },
+                  {
+                    "label": "false",
+                    "value": "false"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "firewallRuleCollectionGroups",
+              "label": "Firewall rule collection groups \u2014 advanced JSON",
+              "toolTip": "Firewall rule collection groups. An empty policy provides no explicit Allow rules.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": "[]"
+            }
+          ]
+        },
+        {
+          "name": "hybrid",
+          "label": "Hybrid connectivity",
+          "elements": [
+            {
+              "name": "deployVpnGateway",
+              "label": "Deploy vpn gateway",
+              "toolTip": "Create a site-to-site VPN gateway. Branch connections are configured separately.",
+              "visible": true,
+              "type": "Microsoft.Common.DropDown",
+              "defaultValue": "false",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "true",
+                    "value": "true"
+                  },
+                  {
+                    "label": "false",
+                    "value": "false"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "vpnGatewayName",
+              "label": "Vpn gateway name",
+              "toolTip": "Site-to-site VPN gateway name.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": "[concat(steps('network').hubName, '-vpn')]"
+            },
+            {
+              "name": "vpnScaleUnits",
+              "label": "Vpn scale units",
+              "toolTip": "Site-to-site VPN gateway scale units.",
+              "visible": true,
+              "type": "Microsoft.Common.DropDown",
+              "defaultValue": "1",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "1",
+                    "value": "1"
+                  },
+                  {
+                    "label": "2",
+                    "value": "2"
+                  },
+                  {
+                    "label": "3",
+                    "value": "3"
+                  },
+                  {
+                    "label": "4",
+                    "value": "4"
+                  },
+                  {
+                    "label": "5",
+                    "value": "5"
+                  },
+                  {
+                    "label": "6",
+                    "value": "6"
+                  },
+                  {
+                    "label": "7",
+                    "value": "7"
+                  },
+                  {
+                    "label": "8",
+                    "value": "8"
+                  },
+                  {
+                    "label": "9",
+                    "value": "9"
+                  },
+                  {
+                    "label": "10",
+                    "value": "10"
+                  },
+                  {
+                    "label": "20",
+                    "value": "20"
+                  },
+                  {
+                    "label": "30",
+                    "value": "30"
+                  },
+                  {
+                    "label": "40",
+                    "value": "40"
+                  },
+                  {
+                    "label": "50",
+                    "value": "50"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "deployExpressRouteGateway",
+              "label": "Deploy express route gateway",
+              "toolTip": "Create an ExpressRoute gateway. Circuit connections are configured separately.",
+              "visible": true,
+              "type": "Microsoft.Common.DropDown",
+              "defaultValue": "false",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "true",
+                    "value": "true"
+                  },
+                  {
+                    "label": "false",
+                    "value": "false"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "expressRouteGatewayName",
+              "label": "Express route gateway name",
+              "toolTip": "ExpressRoute gateway name.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": "[concat(steps('network').hubName, '-er')]"
+            },
+            {
+              "name": "expressRouteMinScaleUnits",
+              "label": "Express route min scale units",
+              "toolTip": "Minimum ExpressRoute gateway autoscale units.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true,
+                "regex": "^[0-9]+$",
+                "validationMessage": "Enter a whole number.",
+                "validations": [
+                  {
+                    "isValid": "[and(greaterOrEquals(int(steps('hybrid').expressRouteMinScaleUnits), 1), lessOrEquals(int(steps('hybrid').expressRouteMinScaleUnits), 10))]",
+                    "message": "Enter a value from 1 to 10."
+                  }
+                ]
+              },
+              "defaultValue": "1"
+            },
+            {
+              "name": "expressRouteMaxScaleUnits",
+              "label": "Express route max scale units",
+              "toolTip": "Maximum ExpressRoute gateway autoscale units. Must be at least the minimum.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true,
+                "regex": "^[0-9]+$",
+                "validationMessage": "Enter a whole number.",
+                "validations": [
+                  {
+                    "isValid": "[and(greaterOrEquals(int(steps('hybrid').expressRouteMaxScaleUnits), 1), lessOrEquals(int(steps('hybrid').expressRouteMaxScaleUnits), 10))]",
+                    "message": "Enter a value from 1 to 10."
+                  },
+                  {
+                    "isValid": "[greaterOrEquals(int(steps('hybrid').expressRouteMaxScaleUnits), int(steps('hybrid').expressRouteMinScaleUnits))]",
+                    "message": "Maximum scale units must be at least the minimum."
+                  }
+                ]
+              },
+              "defaultValue": "2"
+            }
+          ]
+        },
+        {
+          "name": "monitoring",
+          "label": "Monitoring",
+          "elements": [
+            {
+              "name": "enableLogging",
+              "label": "Enable logging",
+              "toolTip": "Create a workspace and enable firewall diagnostics when a firewall is deployed.",
+              "visible": true,
+              "type": "Microsoft.Common.DropDown",
+              "defaultValue": "true",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "true",
+                    "value": "true"
+                  },
+                  {
+                    "label": "false",
+                    "value": "false"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "workspaceName",
+              "label": "Workspace name",
+              "toolTip": "Name of the Log Analytics workspace created by this blueprint.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": "[concat(steps('network').hubName, '-logs')]"
+            },
+            {
+              "name": "workspaceLocation",
+              "label": "Workspace location",
+              "toolTip": "Azure region for the Log Analytics workspace.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": "[steps('network').hubLocation]"
+            },
+            {
+              "name": "logRetentionDays",
+              "label": "Log retention days",
+              "toolTip": "Log retention in days.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true,
+                "regex": "^[0-9]+$",
+                "validationMessage": "Enter a whole number.",
+                "validations": [
+                  {
+                    "isValid": "[and(greaterOrEquals(int(steps('monitoring').logRetentionDays), 30), lessOrEquals(int(steps('monitoring').logRetentionDays), 730))]",
+                    "message": "Enter a value from 30 to 730."
+                  }
+                ]
+              },
+              "defaultValue": "30"
+            },
+            {
+              "name": "enableWorkbook",
+              "label": "Enable workbook",
+              "toolTip": "Deploy the firewall workbook when firewall logging is enabled.",
+              "visible": true,
+              "type": "Microsoft.Common.DropDown",
+              "defaultValue": "true",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "true",
+                    "value": "true"
+                  },
+                  {
+                    "label": "false",
+                    "value": "false"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "tags",
+              "label": "Tags \u2014 advanced JSON",
+              "toolTip": "Resource tags such as owner, environment, and cost centre.",
+              "visible": true,
+              "type": "Microsoft.Common.TextBox",
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": "{}"
+            }
+          ]
+        }
+      ]
+    },
+    "outputs": {
+      "parameters": {
+        "virtualWanName": "[steps('network').virtualWanName]",
+        "virtualWanLocation": "[steps('network').virtualWanLocation]",
+        "hubName": "[steps('network').hubName]",
+        "hubLocation": "[steps('network').hubLocation]",
+        "hubAddressPrefix": "[steps('network').hubAddressPrefix]",
+        "inspectionMode": "[steps('security').inspectionMode]",
+        "firewallName": "[steps('security').firewallName]",
+        "firewallTier": "[steps('security').firewallTier]",
+        "firewallPublicIpCount": "[int(steps('security').firewallPublicIpCount)]",
+        "firewallZones": "[parse(steps('security').firewallZones)]",
+        "firewallPolicyName": "[steps('security').firewallPolicyName]",
+        "firewallPolicyLocation": "[steps('security').firewallPolicyLocation]",
+        "threatIntelMode": "[steps('security').threatIntelMode]",
+        "enableDnsProxy": "[bool(steps('security').enableDnsProxy)]",
+        "firewallRuleCollectionGroups": "[parse(steps('security').firewallRuleCollectionGroups)]",
+        "deployVpnGateway": "[bool(steps('hybrid').deployVpnGateway)]",
+        "vpnGatewayName": "[steps('hybrid').vpnGatewayName]",
+        "vpnScaleUnits": "[int(steps('hybrid').vpnScaleUnits)]",
+        "deployExpressRouteGateway": "[bool(steps('hybrid').deployExpressRouteGateway)]",
+        "expressRouteGatewayName": "[steps('hybrid').expressRouteGatewayName]",
+        "expressRouteMinScaleUnits": "[int(steps('hybrid').expressRouteMinScaleUnits)]",
+        "expressRouteMaxScaleUnits": "[int(steps('hybrid').expressRouteMaxScaleUnits)]",
+        "enableLogging": "[bool(steps('monitoring').enableLogging)]",
+        "workspaceName": "[steps('monitoring').workspaceName]",
+        "workspaceLocation": "[steps('monitoring').workspaceLocation]",
+        "logRetentionDays": "[int(steps('monitoring').logRetentionDays)]",
+        "enableWorkbook": "[bool(steps('monitoring').enableWorkbook)]",
+        "tags": "[parse(steps('monitoring').tags)]"
+      },
+      "kind": "ResourceGroup",
+      "location": "[steps('basics').resourceScope.location.name]",
+      "resourceGroupId": "[steps('basics').resourceScope.resourceGroup.id]"
+    }
+  }
+}

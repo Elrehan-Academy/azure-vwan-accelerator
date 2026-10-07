@@ -3,12 +3,13 @@
 ## Current availability
 
 The single-hub Bicep blueprint supports a Standard Virtual WAN, one hub,
-optional Azure Firewall, a new firewall policy, and optional firewall
-logging and workbook deployment.
+optional Azure Firewall, a new firewall policy, optional firewall
+logging and workbook deployment, and optional site-to-site VPN and
+ExpressRoute gateways.
 
 The files have passed local compilation. Live deployment, routing, and
-monitoring validation remain pending. The portal form and multi-hub
-blueprint are not available yet.
+monitoring validation remain pending. A draft portal form is available but has not passed portal preview
+validation. The multi-hub blueprint is not available yet.
 
 ## Single-hub architecture
 
@@ -57,7 +58,7 @@ deployment resource group. Hub, policy, and monitoring locations can differ.
 | Firewall diagnostics | Send resource-specific logs and metrics | Enabled with logging |
 | Azure Monitor workbook | Explore firewall events | Created when logging and workbook deployment are enabled |
 | Workload VNets and connections | Attach application networks | Not implemented yet |
-| VPN and ExpressRoute gateways | Hybrid connectivity | Not implemented yet |
+| VPN and ExpressRoute gateways | Hybrid connectivity | Optional gateway creation; connections configured separately |
 
 Referencing the firewall as an existing resource inside the Bicep code is
 used to attach diagnostics to the firewall created by the network module.
@@ -124,6 +125,29 @@ DNS configuration must be designed together with application-rule requirements.
 
 Availability-zone support depends on the chosen region. An empty zone list
 does not request explicit zone placement.
+
+## Hybrid connectivity
+
+Both gateway options default to disabled. Enabling a gateway incurs additional
+Azure charges and does not establish a connection to a branch or circuit.
+
+| Input | Default | Meaning |
+| --- | --- | --- |
+| deployVpnGateway | false | Create a site-to-site VPN gateway |
+| vpnGatewayName | Hub name plus -vpn | VPN gateway name |
+| vpnScaleUnits | 1 | VPN capacity scale units |
+| deployExpressRouteGateway | false | Create an ExpressRoute gateway |
+| expressRouteGatewayName | Hub name plus -er | ExpressRoute gateway name |
+| expressRouteMinScaleUnits | 1 | Minimum ExpressRoute autoscale units |
+| expressRouteMaxScaleUnits | 2 | Maximum ExpressRoute autoscale units |
+
+The ExpressRoute maximum must be at least the minimum. The draft portal form
+includes this check; portal behavior remains unverified. The Bicep inputs
+currently enforce individual ranges, not this relationship.
+
+VPN requires separate branch-site and connection configuration.
+ExpressRoute requires an existing circuit and a separately configured
+gateway connection. Point-to-site VPN is not included.
 
 ## Monitoring
 
