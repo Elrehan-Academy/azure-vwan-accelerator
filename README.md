@@ -1,8 +1,10 @@
 # Azure Virtual WAN Accelerator
 
-![Created and maintained by Mohamed Elrehan](https://img.shields.io/badge/Created%20%26%20maintained%20by-Mohamed%20Elrehan-0969DA)
+<p align="left">
+  <img src="https://img.shields.io/badge/Elrehan%20Academy-Mohamed%20Elrehan-0969DA?style=for-the-badge&amp;labelColor=16365D" alt="Elrehan Academy — Created and maintained by Mohamed Elrehan">
+</p>
 
-For **Elrehan Academy**.
+Created and maintained by **Mohamed Elrehan** for **Elrehan Academy**.
 
 Built using [Microsoft Azure Verified Modules](https://azure.github.io/Azure-Verified-Modules/)
 and adapted from Microsoft's Azure Firewall Monitor Workbook.
