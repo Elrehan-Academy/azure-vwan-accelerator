@@ -31,11 +31,23 @@ Both blueprints will use shared Bicep modules.
 
 **Development preview:** portal behavior and live deployment validation remain pending. Deployment creates billable Azure resources.
 
-[![Deploy Single Hub to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2Fa350f19e25a4f2ed7a4e3e98b110477f7ecdc520%2Fportal%2Fsingle-hub%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2Fa350f19e25a4f2ed7a4e3e98b110477f7ecdc520%2Fportal%2Fsingle-hub%2FuiFormDefinition.json)
+[![Deploy Single Hub to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2F8c307e138d611a0e28b2566e21d117e591718e2e%2Fportal%2Fsingle-hub%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2F8c307e138d611a0e28b2566e21d117e591718e2e%2Fportal%2Fsingle-hub%2FuiFormDefinition.json)
 
 For the initial form check, review the inputs without selecting Create.
 
 Multi-Hub deployment is not available yet.
+
+## Test an Existing Hub
+
+**Development preview:** portal controls and the complete test workflow require live validation. Creates billable resources and temporarily changes hub connections and firewall policy rules.
+
+[![Test an Existing Hub](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2F8c307e138d611a0e28b2566e21d117e591718e2e%2Fportal%2Ftest-existing-hub%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2F8c307e138d611a0e28b2566e21d117e591718e2e%2Fportal%2Ftest-existing-hub%2FuiFormDefinition.json)
+
+Choose a dedicated automation resource group, then select the existing hub, its attached firewall policy and its log workspace. Two private Linux VMs are created in a separate test resource group.
+
+Tests check private TCP 8080 Allow / 8081 Deny and HTTP application Allow / Deny behavior, then verify matching firewall logs. Workbook assessment publication is optional.
+
+Successful runs can remove test VMs, hub connections and temporary firewall rules. Failed runs retain resources for investigation. Automation resources and role assignments require separate cleanup. Download evidence before its seven-day retention expires.
 
 ## Solution components
 
