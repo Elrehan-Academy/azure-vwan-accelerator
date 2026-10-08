@@ -155,11 +155,11 @@
     },
     "outputs": {
       "parameters": {
-        "coreResourceGroup": "[split(steps('target').hub.id, '/')[4]]",
+        "coreResourceGroup": "[first(skip(split(steps('target').hub.id, '/'), 4))]",
         "hubName": "[steps('target').hub.name]",
         "location": "[steps('target').hub.location]",
-        "policyResourceGroup": "[split(steps('target').policy.id, '/')[4]]",
-        "workspaceResourceGroup": "[split(steps('target').workspace.id, '/')[4]]",
+        "policyResourceGroup": "[first(skip(split(steps('target').policy.id, '/'), 4))]",
+        "workspaceResourceGroup": "[first(skip(split(steps('target').workspace.id, '/'), 4))]",
         "firewallPolicyResourceId": "[steps('target').policy.id]",
         "workspaceResourceId": "[steps('target').workspace.id]",
         "vmSize": "[steps('tests').vmSize]",
