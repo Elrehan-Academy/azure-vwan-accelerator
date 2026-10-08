@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.45.15.27210",
-      "templateHash": "15667466176605682676"
+      "templateHash": "10454913734078658480"
     }
   },
   "parameters": {
@@ -146,7 +146,7 @@
       "properties": {
         "azCliVersion": "2.64.0",
         "timeout": "PT4H",
-        "retentionInterval": "P7D",
+        "retentionInterval": "PT24H",
         "cleanupPreference": "OnExpiration",
         "forceUpdateTag": "[parameters('runId')]",
         "scriptContent": "[variables('runnerContent')]",
@@ -592,7 +592,7 @@
     },
     "evidenceRetention": {
       "type": "string",
-      "value": "Download evidence before the 7-day retention expires."
+      "value": "Download evidence within 24 hours after execution finishes."
     },
     "managedIdentityId": {
       "type": "string",

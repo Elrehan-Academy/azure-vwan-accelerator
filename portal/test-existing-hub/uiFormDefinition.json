@@ -15,7 +15,7 @@
               "visible": true,
               "options": {
                 "icon": "Info",
-                "text": "Test an existing secured virtual hub. Choose a dedicated automation resource group. Creates two billable private VMs in a separate test RG, temporary hub connections and firewall rules. Requires permission to create resource groups and assign roles. Download evidence within 7 days."
+                "text": "Test an existing secured virtual hub. Choose a dedicated automation resource group. Creates two billable private VMs in a separate test RG, temporary hub connections and firewall rules. Requires permission to create resource groups and assign roles. Download evidence within 24 hours."
               }
             },
             {

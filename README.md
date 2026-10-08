@@ -47,7 +47,7 @@ Choose a dedicated automation resource group, then select the existing hub, its 
 
 Tests check private TCP 8080 Allow / 8081 Deny and HTTP application Allow / Deny behavior, then verify matching firewall logs. Workbook assessment publication is optional.
 
-Successful runs can remove test VMs, hub connections and temporary firewall rules. Failed runs retain resources for investigation. Automation resources and role assignments require separate cleanup. Download evidence before its seven-day retention expires.
+Successful runs can remove test VMs, hub connections and temporary firewall rules. Failed runs retain resources for investigation. Automation resources and role assignments require separate cleanup. Download evidence before its 24-hour retention expires.
 
 ## Solution components
 

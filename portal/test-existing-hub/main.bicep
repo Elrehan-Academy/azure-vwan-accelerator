@@ -141,7 +141,7 @@ resource runner 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
   properties: {
     azCliVersion: '2.64.0'
     timeout: 'PT4H'
-    retentionInterval: 'P7D'
+    retentionInterval: 'PT24H'
     cleanupPreference: 'OnExpiration'
     forceUpdateTag: runId
     scriptContent: runnerContent
@@ -180,5 +180,5 @@ resource runner 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
 output testResourceGroup string = testResourceGroupName
 output executionResourceId string = runner.id
 output result object = runner.properties.outputs
-output evidenceRetention string = 'Download evidence before the 7-day retention expires.'
+output evidenceRetention string = 'Download evidence within 24 hours after execution finishes.'
 output managedIdentityId string = identity.id
