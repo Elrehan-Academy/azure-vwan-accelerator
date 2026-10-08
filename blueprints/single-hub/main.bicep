@@ -87,6 +87,10 @@ param logRetentionDays int = 30
 @description('Deploy the firewall workbook when firewall logging is enabled.')
 param enableWorkbook bool = true
 
+@description('Friendly name shown in the workbook gallery.')
+@minLength(1)
+param workbookDisplayName string = 'Azure vWAN - Firewall Observability'
+
 @description('Create a site-to-site VPN gateway. Branch connections are configured separately.')
 param deployVpnGateway bool = false
 
@@ -252,6 +256,7 @@ module observability '../../modules/observability/main.bicep' = if (loggingEnabl
   name: 'single-hub-observability'
   params: {
     workbookName: guid(resourceGroup().id, virtualWanName, 'firewall-observability')
+    displayName: workbookDisplayName
     location: workspaceLocation
     workspaceResourceId: workspace!.id
     firewallResourceId: firewall.id

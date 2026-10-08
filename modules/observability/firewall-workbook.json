@@ -70,6 +70,14 @@
             "linkLabel": "Investigation",
             "subTarget": "AFInvestigate",
             "style": "link"
+          },
+          {
+            "id": "9ccb39d0-37ec-44e1-b59b-6939e0199b55",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Security Assessment",
+            "subTarget": "AcademyAssessment",
+            "style": "link"
           }
         ]
       },
@@ -230,6 +238,14 @@
               "showDefault": false
             },
             "jsonData": "\r\n[\r\n{\r\n\"value\": \"https://raw.githubusercontent.com/datasets/geoip2-ipv4/master/data/geoip2-ipv4.csv\", \"label\": \"GeoLocationDefault\", \"selected\": \"true\"  \r\n}\r\n]\r\n\r\n"
+          },
+          {
+            "id": "academy-assessment-snapshot",
+            "version": "KqlParameterItem/1.0",
+            "name": "AssessmentSnapshot",
+            "type": 1,
+            "isHiddenWhenLocked": true,
+            "value": "{\"generatedUtc\": \"\", \"firewallId\": \"__FIREWALL_RESOURCE_ID__\", \"checks\": [{\"id\": \"N01\", \"framework\": \"NIST\", \"reference\": \"PR.PS-04\", \"title\": \"Firewall diagnostics configured\", \"evaluation\": \"Automatic\", \"requiredEvidence\": \"Enabled network-rule logs sent to the selected workspace\", \"status\": \"Not assessed\", \"observed\": \"No assessment supplied.\", \"recommendation\": \"Enabled network-rule logs sent to the selected workspace\"}, {\"id\": \"N02\", \"framework\": \"NIST\", \"reference\": \"DE.CM-01\", \"title\": \"Recent network logs available\", \"evaluation\": \"Automatic\", \"requiredEvidence\": \"Logs observed for the selected firewall and time range\", \"status\": \"Not assessed\", \"observed\": \"No assessment supplied.\", \"recommendation\": \"Logs observed for the selected firewall and time range\"}, {\"id\": \"N03\", \"framework\": \"NIST\", \"reference\": \"PR.IR-01\", \"title\": \"Allow rules have restricted sources\", \"evaluation\": \"Automatic\", \"requiredEvidence\": \"Inspect rules, inherited policies and referenced IP groups\", \"status\": \"Not assessed\", \"observed\": \"No assessment supplied.\", \"recommendation\": \"Inspect rules, inherited policies and referenced IP groups\"}, {\"id\": \"N04\", \"framework\": \"NIST\", \"reference\": \"PR.IR-01\", \"title\": \"Allow rules have restricted destinations and ports\", \"evaluation\": \"Automatic\", \"requiredEvidence\": \"Identify wildcard destinations, broad tags and port ranges\", \"status\": \"Not assessed\", \"observed\": \"No assessment supplied.\", \"recommendation\": \"Identify wildcard destinations, broad tags and port ranges\"}, {\"id\": \"N05\", \"framework\": \"NIST\", \"reference\": \"PR.IR-01\", \"title\": \"Management ports restricted\", \"evaluation\": \"Automatic\", \"requiredEvidence\": \"Inspect Allow and DNAT rules for SSH/RDP exposure\", \"status\": \"Not assessed\", \"observed\": \"No assessment supplied.\", \"recommendation\": \"Inspect Allow and DNAT rules for SSH/RDP exposure\"}, {\"id\": \"N06\", \"framework\": \"NIST\", \"reference\": \"PR.IR-01\", \"title\": \"Traffic enforcement test verified\", \"evaluation\": \"Automatic\", \"requiredEvidence\": \"Timestamped probe results matched to Allow/Deny firewall logs\", \"status\": \"Not assessed\", \"observed\": \"No assessment supplied.\", \"recommendation\": \"Timestamped probe results matched to Allow/Deny firewall logs\"}], \"ruleFindings\": []}"
           }
         ],
         "style": "pills",
@@ -460,6 +476,52 @@
         "value": "AFOverview"
       },
       "name": "Main title"
+    },
+    {
+      "type": 3,
+      "name": "academy-overview-network",
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "AFOverview"
+      },
+      "content": {
+        "version": "KqlItem/1.0",
+        "title": "Recent network traffic — latest 500 events",
+        "query": "AZFWNetworkRule\n| where _ResourceId in~ ({Resource})\n| project TimeGenerated, SourceIp, SourcePort, DestinationIp,\n          DestinationPort, Protocol, Action,\n          RuleCollectionGroup, RuleCollection, Rule\n| order by TimeGenerated desc\n| take 500",
+        "size": 0,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspaces}"
+        ],
+        "timeContextFromParameter": "TimeRange",
+        "visualization": "table",
+        "showExportToExcel": true
+      }
+    },
+    {
+      "type": 3,
+      "name": "academy-overview-application",
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "AFOverview"
+      },
+      "content": {
+        "version": "KqlItem/1.0",
+        "title": "Recent application traffic — FQDN / URL when logged",
+        "query": "AZFWApplicationRule\n| where _ResourceId in~ ({Resource})\n| project TimeGenerated, SourceIp, SourcePort,\n          DestinationIp=tostring(column_ifexists(\"DestinationIp\", \"\")),\n          DestinationPort, Protocol, Action, Fqdn,\n          URL=tostring(column_ifexists(\"TargetUrl\", \"\")),\n          RuleCollectionGroup, RuleCollection, Rule\n| order by TimeGenerated desc\n| take 500",
+        "size": 0,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspaces}"
+        ],
+        "timeContextFromParameter": "TimeRange",
+        "visualization": "table",
+        "showExportToExcel": true
+      }
     },
     {
       "type": 3,
@@ -2780,6 +2842,169 @@
         "value": "AFInvestigate"
       },
       "name": "query - 58"
+    },
+    {
+      "type": 1,
+      "name": "academy-assessment-intro",
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "AcademyAssessment"
+      },
+      "content": {
+        "json": "## Security assessment\nTechnical evidence mapped to selected NIST CSF 2.0 outcomes.\n\n**This is not a compliance certification or a complete framework assessment.**\nMissing evidence or query errors mean Not assessed, never Pass."
+      }
+    },
+    {
+      "type": 1,
+      "name": "academy-report-header",
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "AcademyAssessment"
+      },
+      "content": {
+        "json": "## NIST-mapped technical assessment\n**Timestamped snapshot:** rerun assessment after configuration changes.\n\nRead assessed pass rate together with coverage. Review required and Not assessed do not count as Pass. These are selected project checks, not a NIST compliance grade."
+      }
+    },
+    {
+      "type": 3,
+      "name": "academy-report-NIST-summary",
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "AcademyAssessment"
+      },
+      "content": {
+        "version": "KqlItem/1.0",
+        "title": "NIST — assessment summary",
+        "query": "\nlet report = dynamic({AssessmentSnapshot});\nprint Checks=report.checks, Firewall=tostring(report.firewallId),\n      AssessedAt=tostring(report.generatedUtc)\n| where Firewall in~ ({Resource})\n| mv-expand Check=Checks\n| extend Framework=tostring(Check.framework), Status=tostring(Check.status),\n         CheckId=tostring(Check.id), Title=tostring(Check[\"title\"]),\n         Reference=tostring(Check.reference), Observed=tostring(Check.observed),\n         Recommendation=tostring(Check.recommendation)\n\n| where Framework == \"NIST\"\n\n| summarize Total=count(), Passed=countif(Status==\"Pass\"),\n            Failed=countif(Status==\"Fail\"),\n            Review=countif(Status==\"Review required\"),\n            NotAssessed=countif(Status==\"Not assessed\"),\n            EvaluatedAt=take_any(AssessedAt)\n| extend Assessed=Passed+Failed\n| extend PassRatePercent=iff(Assessed>0,\n             round(100.0*Passed/Assessed,1), real(null)),\n         CoveragePercent=iff(Total>0,\n             round(100.0*Assessed/Total,1), real(null))\n| project EvaluatedAt, Total, Passed, Failed, Review,\n          NotAssessed, PassRatePercent, CoveragePercent\n",
+        "size": 0,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspaces}"
+        ],
+        "visualization": "table"
+      }
+    },
+    {
+      "type": 3,
+      "name": "academy-report-NIST-chart",
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "AcademyAssessment"
+      },
+      "content": {
+        "version": "KqlItem/1.0",
+        "title": "NIST — check status",
+        "query": "\nlet report = dynamic({AssessmentSnapshot});\nprint Checks=report.checks, Firewall=tostring(report.firewallId),\n      AssessedAt=tostring(report.generatedUtc)\n| where Firewall in~ ({Resource})\n| mv-expand Check=Checks\n| extend Framework=tostring(Check.framework), Status=tostring(Check.status),\n         CheckId=tostring(Check.id), Title=tostring(Check[\"title\"]),\n         Reference=tostring(Check.reference), Observed=tostring(Check.observed),\n         Recommendation=tostring(Check.recommendation)\n\n| where Framework == \"NIST\"\n| summarize Checks=count() by Status",
+        "size": 0,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspaces}"
+        ],
+        "visualization": "piechart"
+      }
+    },
+    {
+      "type": 3,
+      "name": "academy-report-NIST-details",
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "AcademyAssessment"
+      },
+      "content": {
+        "version": "KqlItem/1.0",
+        "title": "NIST — evidence and recommendations",
+        "query": "\nlet report = dynamic({AssessmentSnapshot});\nprint Checks=report.checks, Firewall=tostring(report.firewallId),\n      AssessedAt=tostring(report.generatedUtc)\n| where Firewall in~ ({Resource})\n| mv-expand Check=Checks\n| extend Framework=tostring(Check.framework), Status=tostring(Check.status),\n         CheckId=tostring(Check.id), Title=tostring(Check[\"title\"]),\n         Reference=tostring(Check.reference), Observed=tostring(Check.observed),\n         Recommendation=tostring(Check.recommendation)\n\n| where Framework == \"NIST\"\n\n| project CheckId, Title, Status, Reference, Observed, Recommendation\n| order by CheckId asc\n",
+        "size": 0,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspaces}"
+        ],
+        "visualization": "table"
+      }
+    },
+    {
+      "type": 3,
+      "name": "academy-report-rule-findings",
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "AcademyAssessment"
+      },
+      "content": {
+        "version": "KqlItem/1.0",
+        "title": "Policy rules — scope and findings",
+        "query": "\nlet report = dynamic({AssessmentSnapshot});\nprint Findings=report.ruleFindings, Firewall=tostring(report.firewallId)\n| where Firewall in~ ({Resource})\n| mv-expand Finding=Findings\n| project Rule=tostring(Finding.rule), Group=tostring(Finding.group),\n          Action=tostring(Finding.action), Sources=tostring(Finding.sources),\n          Destinations=tostring(Finding.destinations),\n          Ports=tostring(Finding.ports), Findings=tostring(Finding.findings)\n",
+        "size": 0,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspaces}"
+        ],
+        "visualization": "table"
+      }
+    },
+    {
+      "type": 3,
+      "name": "academy-assessment-logging",
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "AcademyAssessment"
+      },
+      "content": {
+        "version": "KqlItem/1.0",
+        "title": "Logging evidence — selected firewall and time range",
+        "query": "AZFWNetworkRule\n| where _ResourceId in~ ({Resource})\n| summarize Events=count(), LatestEvent=max(TimeGenerated) by Firewall=_ResourceId\n| extend Check=\"Network-rule logs available\",\n         Status=\"Pass\",\n         Mapping=\"NIST CSF 2.0 PR.PS-04 / DE.CM-01\",\n         Scope=\"Observed network-rule logs in selected time range; monitoring effectiveness needs review\"\n| project Firewall, Check, Status, Events, LatestEvent, Mapping, Scope",
+        "size": 0,
+        "visualization": "table",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspaces}"
+        ],
+        "timeContextFromParameter": "TimeRange"
+      }
+    },
+    {
+      "type": 3,
+      "name": "academy-assessment-policy",
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "AcademyAssessment"
+      },
+      "content": {
+        "version": "KqlItem/1.0",
+        "title": "Firewall policy — threat intelligence technical check",
+        "query": "Resources\n| where type =~ 'microsoft.network/azurefirewalls'\n| where id in~ ({Resource})\n| extend PolicyId=tolower(tostring(properties.firewallPolicy.id))\n| project Firewall=name, PolicyId\n| join kind=leftouter (\n    Resources\n    | where type =~ 'microsoft.network/firewallpolicies'\n    | project PolicyId=tolower(id),\n              ThreatIntelMode=tostring(properties.threatIntelMode)\n) on PolicyId\n| extend Check=\"Threat intelligence enabled\",\n         Status=case(ThreatIntelMode in~ ('Alert','Deny'), 'Pass',\n                     ThreatIntelMode =~ 'Off', 'Fail', 'Not assessed'),\n         Mapping=\"Project technical baseline; supports NIST CSF 2.0 DE.CM-01\",\n         Recommendation=\"Review Alert versus Deny against your risk requirements\"\n| project Firewall, Check, ThreatIntelMode, Status, Mapping, Recommendation",
+        "size": 0,
+        "visualization": "table",
+        "queryType": 1,
+        "resourceType": "microsoft.resourcegraph/resources",
+        "crossComponentResources": [
+          "value::selected"
+        ]
+      }
+    },
+    {
+      "type": 1,
+      "name": "academy-assessment-review",
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "AcademyAssessment"
+      },
+      "content": {
+        "json": "### Scope and required reviews\n- Review inherited policies and referenced IP groups.\n- Justify broad destinations and temporary management access.\n- Match test probes to timestamped firewall logs.\n- Review logging effectiveness, access and retention requirements.\n\n[NIST CSF 2.0](https://doi.org/10.6028/NIST.CSWP.29)"
+      }
     }
   ],
   "isLocked": false,

@@ -1,0 +1,6 @@
+
+
+# Local test configuration and Python caches
+__pycache__/
+*.pyc
+test-harness.local*.json

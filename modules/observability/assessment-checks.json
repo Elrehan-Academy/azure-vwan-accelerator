@@ -1,0 +1,66 @@
+{
+  "version": "1.0",
+  "scope": "Project technical checks mapped to selected NIST CSF 2.0 outcomes; not a compliance certification",
+  "statuses": [
+    "Pass",
+    "Fail",
+    "Not assessed",
+    "Review required"
+  ],
+  "scoring": {
+    "method": "Equal weight per check within each framework",
+    "assessedPassRate": "Pass / (Pass + Fail); unavailable when denominator is zero",
+    "coverage": "(Pass + Fail) / total checks",
+    "note": "Not assessed and Review required never count as Pass; no compliance grade"
+  },
+  "checks": [
+    {
+      "id": "N01",
+      "framework": "NIST",
+      "reference": "PR.PS-04",
+      "title": "Firewall diagnostics configured",
+      "evaluation": "Automatic",
+      "requiredEvidence": "Enabled network-rule logs sent to the selected workspace"
+    },
+    {
+      "id": "N02",
+      "framework": "NIST",
+      "reference": "DE.CM-01",
+      "title": "Recent network logs available",
+      "evaluation": "Automatic",
+      "requiredEvidence": "Logs observed for the selected firewall and time range"
+    },
+    {
+      "id": "N03",
+      "framework": "NIST",
+      "reference": "PR.IR-01",
+      "title": "Allow rules have restricted sources",
+      "evaluation": "Automatic",
+      "requiredEvidence": "Inspect rules, inherited policies and referenced IP groups"
+    },
+    {
+      "id": "N04",
+      "framework": "NIST",
+      "reference": "PR.IR-01",
+      "title": "Allow rules have restricted destinations and ports",
+      "evaluation": "Automatic",
+      "requiredEvidence": "Identify wildcard destinations, broad tags and port ranges"
+    },
+    {
+      "id": "N05",
+      "framework": "NIST",
+      "reference": "PR.IR-01",
+      "title": "Management ports restricted",
+      "evaluation": "Automatic",
+      "requiredEvidence": "Inspect Allow and DNAT rules for SSH/RDP exposure"
+    },
+    {
+      "id": "N06",
+      "framework": "NIST",
+      "reference": "PR.IR-01",
+      "title": "Traffic enforcement test verified",
+      "evaluation": "Automatic",
+      "requiredEvidence": "Timestamped probe results matched to Allow/Deny firewall logs"
+    }
+  ]
+}

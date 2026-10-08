@@ -20,7 +20,7 @@ param tags object = {}
 
 var workbookData = replace(
   replace(
-    loadTextContent('firewall-workbook.json'),
+    string(loadJsonContent('firewall-workbook.json')),
     '__WORKSPACE_RESOURCE_ID__',
     workspaceResourceId
   ),

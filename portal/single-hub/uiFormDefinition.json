@@ -539,6 +539,17 @@
               }
             },
             {
+              "name": "workbookDisplayName",
+              "label": "Workbook display name",
+              "toolTip": "Friendly name shown in the workbook gallery.",
+              "type": "Microsoft.Common.TextBox",
+              "visible": true,
+              "constraints": {
+                "required": true
+              },
+              "defaultValue": "Azure vWAN - Firewall Observability"
+            },
+            {
               "name": "tags",
               "label": "Tags \u2014 advanced JSON",
               "toolTip": "Resource tags such as owner, environment, and cost centre.",
@@ -582,7 +593,8 @@
         "workspaceLocation": "[steps('monitoring').workspaceLocation]",
         "logRetentionDays": "[int(steps('monitoring').logRetentionDays)]",
         "enableWorkbook": "[bool(steps('monitoring').enableWorkbook)]",
-        "tags": "[parse(steps('monitoring').tags)]"
+        "tags": "[parse(steps('monitoring').tags)]",
+        "workbookDisplayName": "[steps('monitoring').workbookDisplayName]"
       },
       "kind": "ResourceGroup",
       "location": "[steps('basics').resourceScope.location.name]",
