@@ -130,7 +130,7 @@ resource runner 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
     }
   }
   properties: {
-    azCliVersion: '2.64.0'
+    azCliVersion: '2.65.0'
     timeout: 'PT4H'
     retentionInterval: 'PT24H'
     cleanupPreference: 'OnExpiration'
