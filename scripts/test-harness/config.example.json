@@ -1,0 +1,12 @@
+{
+  "subscriptionId": "YOUR_SUBSCRIPTION_ID",
+  "coreResourceGroup": "YOUR_CORE_RESOURCE_GROUP",
+  "hubName": "YOUR_HUB_NAME",
+  "location": "westeurope",
+  "testResourceGroup": "rg-vwan-cli-test",
+  "vmSize": "Standard_B1ms",
+  "spokeAPrefix": "10.251.0.0/24",
+  "spokeBPrefix": "10.252.0.0/24",
+  "adminUsername": "harnessadmin",
+  "vmImage": "Ubuntu2204"
+}

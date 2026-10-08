@@ -39,15 +39,18 @@ Multi-Hub deployment is not available yet.
 
 ## Test an Existing Hub
 
-**Development preview:** portal controls and the complete test workflow require live validation. Creates billable resources and temporarily changes hub connections and firewall policy rules.
+Use the optional Azure CLI workflow after deploying Single Hub.
 
-[![Test an Existing Hub](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2Fedb80f7fe3005f0904e125063579d84cd95756f7%2Fportal%2Ftest-existing-hub%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2Fedb80f7fe3005f0904e125063579d84cd95756f7%2Fportal%2Ftest-existing-hub%2FuiFormDefinition.json)
+**Development preview:** the complete CLI workflow requires live validation.
+It creates two private Linux VMs in a separate test resource group,
+connects their spokes, adds temporary firewall rules, generates private
+and web traffic, verifies firewall logs and optionally updates the workbook.
 
-Choose a dedicated automation resource group, then select the existing hub, its attached firewall policy and its log workspace. Two private Linux VMs are created in a separate test resource group.
+Successful runs can remove the test connections, temporary rules and test
+resource group. Failed runs retain resources for investigation.
 
-Tests check private TCP 8080 Allow / 8081 Deny and HTTP application Allow / Deny behavior, then verify matching firewall logs. Workbook assessment publication is optional.
-
-Successful runs can remove test VMs, hub connections and temporary firewall rules. Failed runs retain resources for investigation. Automation resources and role assignments require separate cleanup. Download evidence before its 24-hour retention expires.
+Follow the [CLI test and cleanup guide](docs/TESTING.md) for configuration,
+commands, expected results, success criteria and cleanup.
 
 ## Solution components
 
