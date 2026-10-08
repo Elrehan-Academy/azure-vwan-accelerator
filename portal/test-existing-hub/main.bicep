@@ -117,16 +117,7 @@ var bundleEnvironment = [
   }
 ]
 
-var runnerContent = '''
-set -euo pipefail
-az config set extension.use_dynamic_install=no
-az extension add --name virtual-wan --allow-preview true --only-show-errors
-az extension add --name azure-firewall --allow-preview true --only-show-errors
-az extension add --name log-analytics --allow-preview true --only-show-errors
-python3 - <<'PY'
-${loadTextContent('portal-run.py')}
-PY
-'''
+var runnerContent = loadTextContent('portal-run.sh')
 
 resource runner 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
   name: 'vwan-existing-hub-tests'
