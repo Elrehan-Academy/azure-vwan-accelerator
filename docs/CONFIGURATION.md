@@ -1,4 +1,4 @@
-# Solution and configuration
+# Elrehan Academy — Configuration guide
 
 ## Current availability
 
@@ -7,9 +7,14 @@ optional Azure Firewall, a new firewall policy, optional firewall
 logging and workbook deployment, and optional site-to-site VPN and
 ExpressRoute gateways.
 
-The files have passed local compilation. Live deployment, routing, and
-monitoring validation remain pending. A draft portal form is available but has not passed portal preview
-validation. The multi-hub blueprint is not available yet.
+Deploy Single Hub using the button in the [README](../README.md#deploy-single-hub).
+After deployment, use the [CLI test guide](TESTING.md) to create temporary
+workloads, verify traffic decisions and logs, publish an assessment and
+remove the test resources.
+
+A separate [Multi-Hub draft](MULTI-HUB.md) provides code-based configuration
+for two to four hubs. It has no published portal button, and the Single-Hub
+test workflow does not validate cross-hub traffic.
 
 ## Single-hub architecture
 
@@ -57,7 +62,7 @@ deployment resource group. Hub, policy, and monitoring locations can differ.
 | Log Analytics workspace | Store firewall logs | Created when firewall logging is enabled |
 | Firewall diagnostics | Send resource-specific logs and metrics | Enabled with logging |
 | Azure Monitor workbook | Explore firewall events | Created when logging and workbook deployment are enabled |
-| Workload VNets and connections | Attach application networks | Not implemented yet |
+| Workload VNets and connections | Attach application networks | Base deployment does not create them; the CLI test workflow creates temporary spokes and hub connections |
 | VPN and ExpressRoute gateways | Hybrid connectivity | Optional gateway creation; connections configured separately |
 
 Referencing the firewall as an existing resource inside the Bicep code is
@@ -141,9 +146,8 @@ Azure charges and does not establish a connection to a branch or circuit.
 | expressRouteMinScaleUnits | 1 | Minimum ExpressRoute autoscale units |
 | expressRouteMaxScaleUnits | 2 | Maximum ExpressRoute autoscale units |
 
-The ExpressRoute maximum must be at least the minimum. The draft portal form
-includes this check; portal behavior remains unverified. The Bicep inputs
-currently enforce individual ranges, not this relationship.
+Set the ExpressRoute maximum to at least the minimum. Review both capacity
+values before deployment, including when using code-based configuration.
 
 VPN requires separate branch-site and connection configuration.
 ExpressRoute requires an existing circuit and a separately configured
@@ -200,7 +204,18 @@ For code-based configuration, review:
 It demonstrates names, regions, inspection settings, policy settings, and
 logging settings. Review every example value before deployment.
 
-Portal-based configuration will be documented when the input form is available.
+For portal deployment:
+
+1. Open the Single-Hub deployment button in the [README](../README.md#deploy-single-hub).
+2. Select the subscription and deployment resource group.
+3. Set resource names, regions and a non-overlapping hub address prefix.
+4. Choose firewall inspection, policy settings and any required gateways.
+5. Enable firewall logging and the workbook to use the monitoring workflow.
+6. Review the settings and deploy.
+
+To run all four CLI traffic checks, select **Both** inspection and enable
+logging. Workbook assessment publication also requires the workbook.
+Wait for deployment to finish before starting the [CLI test guide](TESTING.md).
 
 ## Updates and removal
 

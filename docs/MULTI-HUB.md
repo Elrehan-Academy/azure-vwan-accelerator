@@ -1,14 +1,11 @@
-# Multi-Hub deployment — draft
+# Elrehan Academy — Multi-Hub draft guide
 
 ## Validation status
 
-The Bicep blueprint compiles. Three policy-mode examples pass offline
-configuration checks. Negative tests verify rejection of overlapping hub
-prefixes, duplicate hub names, invalid inspection modes, parent/child name
-conflicts and per-hub rules in Shared mode.
-
-No complete Multi-Hub Azure deployment or cross-hub traffic test has been
-performed. There is no published Multi-Hub deployment button.
+Multi-Hub is a draft for code-based deployment. Use the offline configuration
+validation commands below before deploying. Live Multi-Hub deployment and
+cross-hub traffic validation are pending. There is no published Multi-Hub
+deployment button.
 
 ## Microsoft module foundation
 

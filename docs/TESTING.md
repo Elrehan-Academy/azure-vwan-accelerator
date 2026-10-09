@@ -1,4 +1,4 @@
-# CLI test and cleanup guide
+# Elrehan Academy — CLI test and cleanup guide
 
 ## Status and costs
 
@@ -28,7 +28,7 @@ Workbook publication expects one matching workbook in that resource group.
 ```bash
 git clone https://github.com/Elrehan-Academy/azure-vwan-accelerator.git
 cd azure-vwan-accelerator
-az login
+az login --use-device-code
 az account show --query '{Name:name,Id:id}' --output table
 ```
 
@@ -52,6 +52,7 @@ information. It does not create VMs, connect networks or generate traffic.
 Without `--execute`, it only displays the planned stages.
 
 With `--execute`, the test workflow:
+
 1. Checks the hub, firewall, routing and diagnostics.
 2. Creates two private Linux VMs in a separate test resource group.
 3. Connects their VNets to the vWAN hub using hub connections.
@@ -123,6 +124,8 @@ python3 scripts/test-harness/test-existing-hub.py \
 The workflow checks prerequisites, creates two private VMs, connects their
 spokes, adds temporary rules, generates traffic, verifies logs, creates a
 NIST technical assessment, publishes it and cleans up test resources.
+The runner supplies the verified run evidence to the assessment automatically.
+The published snapshot describes the tested configuration before cleanup.
 
 Omit `--publish-report` to keep the assessment local.
 Omit `--cleanup-after` to retain test resources.
@@ -155,6 +158,7 @@ The report maps selected technical checks to NIST outcomes; it is not
 a full NIST assessment or compliance certification.
 
 A complete pass requires all stages to succeed and cleanup to confirm:
+
 - Both test hub connections are removed.
 - The temporary firewall rule collection group is removed.
 - The test RG no longer exists.

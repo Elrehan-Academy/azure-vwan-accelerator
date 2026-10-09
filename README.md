@@ -110,7 +110,7 @@ not a full NIST assessment or compliance certification.
 Keep the evidence and `REPORT.md` at the paths printed by the scripts.
 Do not repeat the test until cleanup confirms the test connections, rule
 group and resource group are removed. The core deployment remains.
-For individual stage commands, evidence selection and troubleshooting,
+For prerequisites, guided commands, expected results and cleanup,
 see the [CLI test and cleanup guide](docs/TESTING.md).
 
 The test workflow creates two private Linux VMs in a dedicated test
