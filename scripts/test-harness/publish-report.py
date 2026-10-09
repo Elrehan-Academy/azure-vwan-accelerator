@@ -44,8 +44,9 @@ resources = az(
 matches = []
 for resource in resources:
     workbook = az(
-        "resource", "show", "--ids", resource["id"],
-        "--api-version", "2022-04-01",
+        "rest", "--method", "get",
+        "--url", "https://management.azure.com" + resource["id"]
+        + "?api-version=2022-04-01&canFetchContent=true",
     )
     source = workbook.get("properties", {}).get("sourceId", "")
     if source.lower() == d["workspaceId"].lower():

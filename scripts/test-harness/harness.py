@@ -32,7 +32,7 @@ def main():
         result = subprocess.run(
             ["az", *parts, "--subscription", config["subscriptionId"],
              "--output", "json", "--only-show-errors"],
-            text=True, capture_output=True, timeout=180, env=env,
+            text=True, capture_output=True, timeout=900, env=env,
         )
         if result.returncode:
             raise RuntimeError(result.stderr.strip())

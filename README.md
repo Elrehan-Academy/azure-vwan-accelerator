@@ -17,7 +17,10 @@ suitability has not been established.
 | **Single Hub** | One regional hub with optional firewall inspection, gateways and monitoring | Portal deployment succeeded in lab testing |
 | **Multi-Hub** | Two to four hubs with per-hub inspection and shared, separate or parent/child firewall policies | Bicep draft; compilation and offline configuration checks passed |
 
-The complete combined CLI test workflow still requires live validation.
+Single-Hub stages were exercised in a West Europe lab on 9 October 2026:
+private and HTTP Allow/Deny probes, all four matching firewall rule logs,
+and evidence-based workbook assessment publication passed after the fixes
+included here. Cleanup confirmation and a fresh combined rerun are pending.
 Multi-Hub deployment and cross-hub traffic validation are pending.
 
 ## Deploy Single Hub
@@ -68,11 +71,47 @@ and report-publication workflow is not yet validated for Multi-Hub.
 
 Follow the [CLI test and cleanup guide](docs/TESTING.md).
 
-1. Sign in to Azure and install the prerequisites listed in the guide.
-2. Run `python3 scripts/test-harness/configure.py`.
-3. Choose a subscription and existing hub by number.
-4. Review and save the test settings.
-5. Preview the workflow, then explicitly execute it when ready.
+1. Sign in with `az login --use-device-code` and install the guide's prerequisites.
+2. From the repository root, run `python3 scripts/test-harness/configure.py`.
+3. Choose the subscription and existing hub by number; use a separate test
+   resource group, an available VM size and two unused spoke prefixes.
+4. Review and save the settings. Preview the workflow:
+
+   ```bash
+   python3 scripts/test-harness/test-existing-hub.py \
+     --config test-harness.local.json --publish-report --cleanup-after
+   ```
+
+5. After reviewing the preview, explicitly execute:
+
+   ```bash
+   python3 scripts/test-harness/test-existing-hub.py \
+     --config test-harness.local.json --publish-report --cleanup-after --execute
+   ```
+
+The runner passes the latest verified evidence folder to the assessment.
+It runs preflight, creates probes, connects spokes and test rules, generates
+traffic, verifies logs, assesses evidence, publishes the workbook snapshot,
+and cleans up after success. Configuration and preview do not create Azure
+resources. Execution creates billable resources and changes test connections
+and firewall rules.
+
+Expected traffic results: private TCP **8080 Allow / 8081 Deny** and HTTP
+**www.example.com Allow / www.microsoft.com Deny**, each with a matching
+firewall log. HTTP 403 or 470 is only a denial candidate until the matching
+application Deny log is verified. Log ingestion may take several minutes.
+
+The lab assessment had **5 Pass, 0 Fail, 0 Not assessed, 1 Review required**
+(83.3% coverage). The remaining review concerned the temporary
+`allow-agent-https` rule to `AzureCloud:443`; results vary with your policy.
+The published assessment is a snapshot of the tested configuration before
+cleanup, not a full NIST assessment.
+
+Keep the evidence and `REPORT.md` at the paths printed by the scripts.
+Do not repeat the test until cleanup confirms the test connections, rule
+group and resource group are removed. The core deployment remains.
+For individual stage commands, evidence selection and troubleshooting,
+see the [CLI test and cleanup guide](docs/TESTING.md).
 
 The test workflow creates two private Linux VMs in a dedicated test
 resource group, connects their VNets to the hub and adds temporary

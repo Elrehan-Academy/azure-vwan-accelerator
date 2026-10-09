@@ -79,7 +79,7 @@ if args.web:
             result["passed"] = (
                 200 <= response.status < 400
                 if expected == "Allow"
-                else response.status == 403
+                else response.status in (403, 470)
             )
         except (TimeoutError, socket.timeout) as error:
             result["observed"] = "Timed out; firewall evidence required"
