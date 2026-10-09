@@ -43,30 +43,61 @@ az extension add --name azure-firewall
 az extension add --name log-analytics --allow-preview true
 ```
 
+## Two scripts: setup and testing
+
+**Step 1 — Configure:** `configure.py` guides you through subscription,
+hub and test settings, then saves a local JSON file. It only reads Azure
+information. It does not create VMs, connect networks or generate traffic.
+
+**Step 2 — Test:** `test-existing-hub.py` reads the saved settings.
+Without `--execute`, it only displays the planned stages.
+
+With `--execute`, the test workflow:
+1. Checks the hub, firewall, routing and diagnostics.
+2. Creates two private Linux VMs in a separate test resource group.
+3. Connects their VNets to the vWAN hub using hub connections.
+4. Adds temporary firewall rules and generates private and web traffic.
+5. Verifies matching firewall logs and creates a technical assessment.
+6. Updates the workbook when `--publish-report` is selected.
+7. Removes test connections, temporary rules and the test RG after success
+   when `--cleanup-after` is selected.
+
+These are vWAN hub connections, rather than direct VNet-to-VNet peerings.
+Azure Firewall generates the logs as it processes the test traffic.
+
+If a stage fails, execution stops and test resources remain for investigation.
+Use the explicit cleanup instructions below. The core deployment remains
+after test cleanup.
+
 ## Collect and configure settings
 
+Run the guided setup from the repository folder:
+
 ```bash
-az account set --subscription "YOUR_SUBSCRIPTION_ID"
-az network vhub list \
-  --query "[].{Name:name,ResourceGroup:resourceGroup,Location:location,Prefix:addressPrefix}" \
-  --output table
-cp scripts/test-harness/config.example.json test-harness.local.json
-nano test-harness.local.json
+python3 scripts/test-harness/configure.py
 ```
 
-Replace the subscription ID, core resource group and hub name.
-Match the hub's region. Choose a new test RG distinct from the core RG.
-The default workflow refuses an existing test RG.
+1. Choose your subscription by number.
+2. Choose an existing hub by number.
+3. Enter a new test resource group name, separate from the core RG.
+4. Enter a VM size, or press Enter for the example default.
+5. Enter two unused private spoke prefixes.
+6. Review the settings and confirm saving.
 
-Choose two unused RFC1918 IPv4 prefixes, /27 or larger. They must not overlap
-the hub, each other, connected VNets or other reachable networks.
-Preflight checks the hub and directly connected VNets; check other networks
-yourself.
+The subscription ID, hub name, core RG and region are filled automatically.
+No JSON editing or placeholder replacement is required.
 
-Choose an available VM size with sufficient quota. Standard_B1ms is an
-example; live capacity is not guaranteed.
+An existing local settings file changes only after final save confirmation.
+This does not replace or delete Azure resources.
+If no hub is available, setup stops without saving. Deploy Single Hub first.
 
-Keep local configuration, discovery, keys and evidence out of Git.
+Setup checks prefixes against the hub and each other. Live preflight also
+checks directly connected VNets. Check other reachable networks yourself.
+VM availability, quota and live capacity still require validation.
+
+Setup only reads Azure information and saves local settings.
+It prints preview and execution commands. Resource creation requires
+the separate test command with --execute.
 
 ## Preview the workflow
 
