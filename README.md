@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/elrehan-academy-logo.png" alt="Elrehan Academy" width="400">
+</p>
+
 # Elrehan Academy — Azure Virtual WAN Accelerator
 
 **Free cloud networking education through hands-on automation.**
