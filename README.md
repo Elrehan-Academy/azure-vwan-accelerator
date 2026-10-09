@@ -1,6 +1,12 @@
-# Azure Virtual WAN Accelerator
+# Elrehan Academy — Azure Virtual WAN Accelerator
 
-Created and maintained by **Mohamed Elrehan** for **Elrehan Academy**.
+**Free cloud networking education through hands-on automation.**
+
+Created and maintained by **Mohamed Elrehan**.
+
+Learn to deploy, test and observe Azure cloud networking using reusable
+automation and guided practical exercises. The learning materials are
+free; Azure resources deployed in your subscription incur charges.
 
 Deploy Azure Virtual WAN networking with reusable Bicep modules, optional
 Azure Firewall inspection and firewall observability. Use the CLI test
