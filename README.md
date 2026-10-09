@@ -17,11 +17,7 @@ suitability has not been established.
 | **Single Hub** | One regional hub with optional firewall inspection, gateways and monitoring | Portal deployment succeeded in lab testing |
 | **Multi-Hub** | Two to four hubs with per-hub inspection and shared, separate or parent/child firewall policies | Bicep draft; compilation and offline configuration checks passed |
 
-Single-Hub stages were exercised in a West Europe lab on 9 October 2026:
-private and HTTP Allow/Deny probes, all four matching firewall rule logs,
-and evidence-based workbook assessment publication passed after the fixes
-included here. A fresh combined rerun also passed, including automatic
-evidence-based assessment, workbook publication and verified test cleanup.
+Use the guided CLI workflow to validate traffic through an existing Single Hub.
 Multi-Hub deployment and cross-hub traffic validation are pending.
 
 ## Deploy Single Hub
@@ -99,14 +95,11 @@ and firewall rules.
 
 Expected traffic results: private TCP **8080 Allow / 8081 Deny** and HTTP
 **www.example.com Allow / www.microsoft.com Deny**, each with a matching
-firewall log. HTTP 403 or 470 is only a denial candidate until the matching
-application Deny log is verified. Log ingestion may take several minutes.
+firewall log. Log ingestion may take several minutes.
 
-The lab assessment had **5 Pass, 0 Fail, 0 Not assessed, 1 Review required**
-(83.3% coverage). The remaining review concerned the temporary
-`allow-agent-https` rule to `AzureCloud:443`; results vary with your policy.
-The published assessment is a snapshot of the tested configuration before
-cleanup, not a full NIST assessment.
+The workbook assessment shows selected technical checks, findings and
+coverage. It is a timestamped snapshot of the tested configuration,
+not a full NIST assessment or compliance certification.
 
 Keep the evidence and `REPORT.md` at the paths printed by the scripts.
 Do not repeat the test until cleanup confirms the test connections, rule

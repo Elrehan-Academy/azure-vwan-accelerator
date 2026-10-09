@@ -2,12 +2,8 @@
 
 ## Status and costs
 
-Development preview: on 9 October 2026, Single-Hub stages in West Europe
-verified private and HTTP Allow/Deny probes, all four matching firewall
-rule logs, and evidence-based workbook assessment publication after the
-fixes included in this revision. A fresh combined rerun also passed,
-including evidence-based assessment, workbook publication and verified
-test cleanup. This is limited lab evidence, not production validation.
+Use this guide to configure, preview and run traffic tests against an
+existing secured Single Hub, publish an assessment and remove test resources.
 
 The test creates two billable Linux VMs and disks in a dedicated test RG,
 two hub connections and temporary firewall rules. The VMs have no public
@@ -134,56 +130,6 @@ Omit `--cleanup-after` to retain test resources.
 Allow tens of minutes and follow printed progress. Keep the terminal
 running. A failed stage stops execution and retains resources; automatic
 cleanup runs only after the preceding stages succeed.
-
-## Run individual stages when investigating
-
-Use the combined runner above for the guided end-user flow. If you run
-stages individually, check each result before proceeding:
-
-```bash
-python3 scripts/test-harness/harness.py preflight --config test-harness.local.json
-python3 scripts/test-harness/deploy.py --execute --config test-harness.local.json
-python3 scripts/test-harness/connect.py --execute --config test-harness.local.json
-python3 scripts/test-harness/run-tests.py --execute --config test-harness.local.json
-python3 scripts/test-harness/verify-logs.py --execute --config test-harness.local.json
-```
-
-After verification passes, use the **same run's evidence directory** printed
-by the traffic and verification scripts. Replace the example path below
-with that exact directory; do not use a previous failed run:
-
-```bash
-python3 scripts/test-harness/assess.py --config test-harness.local.json \
-  --evidence-dir "/absolute/path/to/verified/evidence/run"
-python3 scripts/test-harness/publish-report.py --execute --config test-harness.local.json
-python3 scripts/test-harness/cleanup.py --execute --config test-harness.local.json
-```
-
-Without `--evidence-dir`, N06 is **Not assessed**, even when traffic and logs
-passed. The combined runner supplies this argument automatically.
-Individual stages do not automatically clean up after publication.
-Preflight discovery must be less than one hour old and match the saved
-configuration before VM deployment.
-
-## Troubleshooting observed during the lab
-
-| Symptom | Handling in this revision |
-| --- | --- |
-| Regional VM SKU lookup exceeds three minutes | Preflight allows up to 900 seconds per Azure command. Wait for the result; do not skip readiness checks. |
-| Blocked web probe receives HTTP 470 | Expected Deny accepts 403 or 470 as a candidate; matching firewall Deny logs remain mandatory. |
-| Publisher receives null `serializedData` | Workbook GET explicitly requests `canFetchContent=true` before updating the snapshot. |
-| N06 says no evidence supplied | Pass the verified run directory using `--evidence-dir`, then republish. |
-| A rule log is initially missing | Verification polls for up to ten minutes. A missing event is not a pass. |
-
-VM SKU zone restrictions alone do not establish a region-wide restriction.
-Quota and live capacity are checked during deployment. Choose a different
-supported size if deployment reports an actual capacity or quota failure.
-
-In the tested configuration, N04 remained **Review required** because the
-temporary `allow-agent-https` rule allowed the two probe IPs to
-`AzureCloud` on port 443. It is part of the owned harness rule group removed
-by cleanup. Do not label the snapshot fully assessed or fully compliant.
-The published snapshot records conditions before cleanup.
 
 ## Expected results and success criteria
 
