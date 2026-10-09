@@ -20,7 +20,8 @@ suitability has not been established.
 Single-Hub stages were exercised in a West Europe lab on 9 October 2026:
 private and HTTP Allow/Deny probes, all four matching firewall rule logs,
 and evidence-based workbook assessment publication passed after the fixes
-included here. Cleanup confirmation and a fresh combined rerun are pending.
+included here. A fresh combined rerun also passed, including automatic
+evidence-based assessment, workbook publication and verified test cleanup.
 Multi-Hub deployment and cross-hub traffic validation are pending.
 
 ## Deploy Single Hub

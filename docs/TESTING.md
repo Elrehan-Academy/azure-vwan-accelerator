@@ -5,8 +5,9 @@
 Development preview: on 9 October 2026, Single-Hub stages in West Europe
 verified private and HTTP Allow/Deny probes, all four matching firewall
 rule logs, and evidence-based workbook assessment publication after the
-fixes included in this revision. Cleanup confirmation and a fresh combined
-rerun remain pending. This is limited lab evidence, not production validation.
+fixes included in this revision. A fresh combined rerun also passed,
+including evidence-based assessment, workbook publication and verified
+test cleanup. This is limited lab evidence, not production validation.
 
 The test creates two billable Linux VMs and disks in a dedicated test RG,
 two hub connections and temporary firewall rules. The VMs have no public
