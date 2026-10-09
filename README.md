@@ -1,117 +1,155 @@
 # Azure Virtual WAN Accelerator
 
-<p align="left">
-  <img src="https://img.shields.io/badge/Elrehan%20Academy-Mohamed%20Elrehan-0969DA?style=for-the-badge&amp;labelColor=16365D" alt="Elrehan Academy — Created and maintained by Mohamed Elrehan">
-</p>
-
 Created and maintained by **Mohamed Elrehan** for **Elrehan Academy**.
 
-Built using [Microsoft Azure Verified Modules](https://azure.github.io/Azure-Verified-Modules/)
-and adapted from Microsoft's Azure Firewall Monitor Workbook.
-Workbook source revision, modifications, and license are recorded in
-[the source attribution](modules/observability/SOURCE.md).
+Deploy Azure Virtual WAN networking with reusable Bicep modules, optional
+Azure Firewall inspection and firewall observability. Use the CLI test
+workflow to create temporary workloads, generate traffic and verify
+firewall decisions against recorded logs.
 
-Choose a regional or multi-region network, configure its settings, and deploy
-into your own Azure subscription through the Azure portal.
+This project supports hands-on learning and lab validation. Production
+suitability has not been established.
 
-**Status:** Under development. The single-hub template compiles and a draft
-portal form is available. Portal and live deployment validation remain
-pending. Production suitability has not been established.
+## Choose your deployment
 
-## Choose your blueprint
-
-| Blueprint | Hub count | Intended use |
+| Option | Scope | Current status |
 | --- | --- | --- |
-| Regional secured vWAN | 1 | Regional connectivity and centralized traffic inspection |
-| Multi-region secured vWAN | 2 by default; expandable to 4 | Connectivity and regional inspection across multiple regions |
+| **Single Hub** | One regional hub with optional firewall inspection, gateways and monitoring | Portal deployment succeeded in lab testing |
+| **Multi-Hub** | Two to four hubs with per-hub inspection and shared, separate or parent/child firewall policies | Bicep draft; compilation and offline configuration checks passed |
 
-Both blueprints will use shared Bicep modules.
+The complete combined CLI test workflow still requires live validation.
+Multi-Hub deployment and cross-hub traffic validation are pending.
 
 ## Deploy Single Hub
 
-**Development preview:** portal behavior and live deployment validation remain pending. Deployment creates billable Azure resources.
+Deploy a Standard Virtual WAN and one hub into your Azure subscription.
+Configure resource names, locations, the hub address prefix, firewall
+inspection, optional gateways, monitoring and tags.
+
+**Development preview:** deployment creates billable Azure resources.
+Review the selected settings and applicable Azure pricing before creating.
 
 [![Deploy Single Hub to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2Fedb80f7fe3005f0904e125063579d84cd95756f7%2Fportal%2Fsingle-hub%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2Fedb80f7fe3005f0904e125063579d84cd95756f7%2Fportal%2Fsingle-hub%2FuiFormDefinition.json)
 
-For the initial form check, review the inputs without selecting Create.
+Inspection modes are **Disabled**, **FirewallOnly**, **Private**,
+**Internet** and **Both**. Disabled creates the hub without a firewall.
+FirewallOnly creates a firewall without routing intent.
 
-Multi-Hub deployment is not available yet.
+With firewall logging enabled, the deployment creates a Log Analytics
+workspace and firewall diagnostics. Workbook deployment is optional.
 
-## Test an Existing Hub
+VPN and ExpressRoute gateways are optional and disabled by default.
+Branch and circuit connections require additional configuration.
 
-Use the optional Azure CLI workflow after deploying Single Hub.
+## Prepare Multi-Hub
 
-**Development preview:** the complete CLI workflow requires live validation.
-It creates two private Linux VMs in a separate test resource group,
-connects their spokes, adds temporary firewall rules, generates private
-and web traffic, verifies firewall logs and optionally updates the workbook.
+The draft blueprint creates one Standard Virtual WAN with **two to four
+hubs**. Each hub has its own region, address prefix, inspection mode and
+optional tags. Enabled firewalls use a common selected tier.
 
-Successful runs can remove the test connections, temporary rules and test
-resource group. Failed runs retain resources for investigation.
+Choose one policy design:
 
-Follow the [CLI test and cleanup guide](docs/TESTING.md) for configuration,
-commands, expected results, success criteria and cleanup.
+| Mode | Policy design |
+| --- | --- |
+| **Shared** | One policy attached to all enabled firewalls |
+| **Separate** | An independent policy for each enabled firewall |
+| **ParentChildren** | A common parent with a child policy for each enabled firewall |
 
-## Solution components
+The monitoring draft uses one shared workspace and a workbook for each
+enabled firewall. All resources are deployed into one resource group.
 
-| Component | Purpose | Planned selection |
-| --- | --- | --- |
-| Standard Virtual WAN | Connect hubs and their attached networks | One per environment |
-| Virtual hubs | Provide regional routing and connectivity | Names, regions, and non-overlapping address prefixes |
-| Azure Firewall | Inspect traffic in a secured hub | Enable per hub; Standard or Premium |
-| Firewall Policy | Define firewall rules and security settings | Shared or separate policies, with explicit location |
-| Routing intent | Direct private and Internet traffic through inspection | Configure per hub; validated against the selected firewall |
-| Spoke connections | Attach workload networks to a selected hub | Explicit selection of existing VNets |
-| Log Analytics | Collect firewall telemetry | Shared monitoring destination |
-| Azure Monitor workbook | Inspect network and application firewall events | All firewalls or selected firewalls |
-| VPN and ExpressRoute gateways | Connect branches and on-premises networks | Optional; disabled by default |
+Read the [Multi-Hub draft guide](docs/MULTI-HUB.md) for configuration
+examples, validation commands and current limitations.
 
-Disabling a hub's firewall removes Azure Firewall inspection from that hub.
-Multiple hubs alone do not provide application disaster recovery.
+**No Multi-Hub portal button is published yet.** The existing CLI testing
+and report-publication workflow is not yet validated for Multi-Hub.
 
-## Deployment experience
+## Test an existing Single Hub
 
-1. Choose Single Hub or Multi-Hub.
-2. Open its Deploy to Azure form.
-3. Enter names, regions, address ranges, and security settings.
-4. Review the configuration and estimated costs.
-5. Deploy and check the deployment outputs.
-6. Verify connectivity, firewall decisions, and monitoring.
+Follow the [CLI test and cleanup guide](docs/TESTING.md).
 
-The Single Hub button is available for development testing. The Multi-Hub button will be added when that blueprint is available.
+1. Sign in to Azure and install the prerequisites listed in the guide.
+2. Run `python3 scripts/test-harness/configure.py`.
+3. Choose a subscription and existing hub by number.
+4. Review and save the test settings.
+5. Preview the workflow, then explicitly execute it when ready.
 
-## New deployments and updates
+The test workflow creates two private Linux VMs in a dedicated test
+resource group, connects their VNets to the hub and adds temporary
+firewall rules. Azure VM Run Command generates private and HTTP traffic
+without requiring an SSH login.
 
-The intended deployment modes are:
+Verification requires matching Allow/Deny firewall events; a failed
+connection alone is not proof of firewall enforcement. The workflow saves
+local evidence and a report. Workbook assessment publication is optional.
 
-- **Create:** deploy a dedicated environment after checking for name conflicts.
-- **Update or expand:** explicitly select the intended existing environment
-  and review the changes.
+Successful runs can remove test resources automatically. If a stage fails,
+the workflow stops and retains resources for investigation and explicit
+cleanup. Testing temporarily changes hub connections and firewall rules.
 
-Existing resources must not be silently adopted. Resource identity and
-ownership checks will be documented with the deployment implementation.
-A standard Bicep deployment can update resources with matching identities;
-a mode selection alone does not prevent this.
+## Observe and assess
 
-Keep existing hub identities stable when expanding the environment.
-Removal will be an explicit, separately documented action.
+The workbook includes network and application traffic tables showing
+source, destination, ports, actions and rule details. FQDN and URL fields
+are shown when available in the logs.
 
-## Costs and ownership
+The NIST report presents selected technical checks, evidence, findings,
+coverage and assessed pass rate. It is a timestamped snapshot, not a full
+NIST assessment or compliance certification.
 
-You own the Azure subscription, deployed resources, permissions, and costs.
-Hubs, firewalls, gateways, and monitoring can incur charges while they exist.
+Premium firewall selection alone does not configure TLS inspection or IDPS.
+The current web probes use HTTP; they do not validate HTTPS inspection.
 
-Production deployments are retained. Automatic expiry or cleanup is not
-currently provided. Optional test resources will have a separate lifecycle.
+## Update and remove resources
+
+Bicep deployments can update resources with matching names and identities.
+Review the target subscription, resource group and changes before deploying
+into an existing environment.
+
+Changing inspection mode to Disabled does not automatically delete an
+existing firewall or its related resources. Removing a hub from an input
+list does not provide an automatic resource-removal workflow.
+
+The [cleanup guide](docs/TESTING.md) distinguishes:
+
+- **Test cleanup:** remove owned test connections, temporary firewall rules
+  and the dedicated test resource group.
+- **Full lab cleanup:** after test cleanup and evidence retention, explicitly
+  delete the dedicated core resource group.
+
+Full resource-group deletion removes every resource in that group.
+Resources in other groups require separate cleanup.
+
+## Costs and responsibility
+
+You control the Azure subscription, permissions, deployed resources and
+costs. Hubs, firewalls, gateways, VMs and monitoring can incur charges.
+
+Core deployments remain until explicitly removed. Requesting deletion is
+not confirmation of completion; verify resources are gone after cleanup.
+
+Multiple hubs provide regional networking options. They do not, by
+themselves, provide application disaster recovery.
+
+## Microsoft modules and attribution
+
+The deployment wrappers use pinned Microsoft Azure Verified Modules:
+
+- Virtual WAN pattern: `avm/ptn/network/virtual-wan:0.2.0`
+- Firewall Policy: `avm/res/network/firewall-policy:0.3.6`
+
+See [Azure Verified Modules](https://azure.github.io/Azure-Verified-Modules/).
+Published module validation does not replace validation of this project's
+custom blueprints, portal forms, workbook changes or test scripts.
+
+The workbook is adapted from Microsoft's Azure Firewall Monitor Workbook.
+Source revision, modifications and license information are recorded in
+[the workbook attribution](modules/observability/SOURCE.md).
 
 ## Documentation
 
-Read the [solution and configuration guide](docs/CONFIGURATION.md) for the architecture diagram, components, inputs, and current limitations.
-
-The deployment guides will cover:
-
-- **Deployment:** prerequisites, portal inputs, and expected results.
-- **Configuration:** component settings and single-hub/multi-hub diagrams.
-- **Operations:** monitoring, verification, updates, troubleshooting, and removal.
-
-Documentation will distinguish available features from planned capabilities.
+| Guide | Contents |
+| --- | --- |
+| [Configuration](docs/CONFIGURATION.md) | Architecture, components and configuration guidance |
+| [CLI testing and cleanup](docs/TESTING.md) | Guided setup, commands, success criteria and removal |
+| [Multi-Hub draft](docs/MULTI-HUB.md) | Policy modes, examples, offline checks and remaining validation |

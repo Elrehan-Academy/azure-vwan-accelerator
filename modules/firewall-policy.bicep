@@ -25,6 +25,9 @@ param threatIntelMode string = 'Deny'
 @description('Enable the firewall DNS proxy.')
 param enableDnsProxy bool = false
 
+@description('Optional parent Firewall Policy resource ID. Null creates an independent policy.')
+param basePolicyResourceId string?
+
 @description('Firewall rule collection groups.')
 param ruleCollectionGroups array = []
 
@@ -37,6 +40,7 @@ module policy 'br/public:avm/res/network/firewall-policy:0.3.6' = {
     name: name
     location: location
     tier: tier
+    basePolicyResourceId: basePolicyResourceId
     threatIntelMode: threatIntelMode
     enableProxy: enableDnsProxy
     ruleCollectionGroups: ruleCollectionGroups

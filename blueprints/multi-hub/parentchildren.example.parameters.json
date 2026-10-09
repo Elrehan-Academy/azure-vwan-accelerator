@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "virtualWanName": {
+      "value": "vwan-multi-example"
+    },
+    "virtualWanLocation": {
+      "value": "westeurope"
+    },
+    "policyMode": {
+      "value": "ParentChildren"
+    },
+    "firewallTier": {
+      "value": "Standard"
+    },
+    "commonPolicyName": {
+      "value": "policy-multi-common"
+    },
+    "commonPolicyLocation": {
+      "value": "westeurope"
+    },
+    "tags": {
+      "value": {
+        "environment": "lab",
+        "project": "vwan-accelerator"
+      }
+    },
+    "hubs": {
+      "value": [
+        {
+          "hubName": "hub-west",
+          "hubLocation": "westeurope",
+          "hubAddressPrefix": "10.250.0.0/24",
+          "inspectionMode": "Both",
+          "tags": {
+            "region": "west"
+          }
+        },
+        {
+          "hubName": "hub-north",
+          "hubLocation": "northeurope",
+          "hubAddressPrefix": "10.250.1.0/24",
+          "inspectionMode": "Both",
+          "tags": {
+            "region": "north"
+          }
+        }
+      ]
+    },
+    "enableLogging": {
+      "value": true
+    },
+    "enableWorkbook": {
+      "value": true
+    },
+    "workspaceName": {
+      "value": "logs-multi-example"
+    },
+    "workspaceLocation": {
+      "value": "westeurope"
+    }
+  }
+}
