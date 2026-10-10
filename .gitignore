@@ -7,3 +7,14 @@ test-harness.local*.json
 
 # Multi-Hub private configuration, generated parameters and outputs
 multi-hub.local*.json
+
+# Local installers, experiments and backups
+/academy-docs-update/
+/single-hub-test-update/
+/elrehan-multi-hub-separation/
+/artifacts/
+/firewall-dashboard-demo/
+/firewall-dashboard-v2/
+/scripts/test-harness/*.timeout-backup
+/scripts/test-harness/*.http-status-backup
+/scripts/test-harness/*.content-backup

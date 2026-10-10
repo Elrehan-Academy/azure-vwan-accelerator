@@ -51,7 +51,10 @@ def number(step, name, label, default, low, high, extra=None, visible=True):
 def hub_json(i):
     step='hubs'; base=f'hub{i}.'
     def r(k): return ref(step,base+k)
-    # JSON fragments contain only constrained names, CIDRs, enums and numeric values.
+    def numeric(k, default):
+        value = r(k)
+        return "string(int(if(empty(" + value + "), '" + str(default) + "', " + value + ")))"
+    # concat receives strings only; hidden numeric controls use explicit defaults.
     # Return a concat expression, using escaped JSON syntax as single-quoted UI literals.
     pieces=[]
     def literal(s): pieces.append("'"+s.replace("'","''")+"'")
@@ -66,16 +69,16 @@ def hub_json(i):
     field('firewallName',"concat("+r('hubName')+", '-fw')")
     field('firewallPolicyName',"concat("+r('hubName')+", '-policy')")
     field('firewallPolicyLocation',"if(equals("+ref('policies','policyMode')+", 'Separate'), coalesce("+r('policyRegion.name')+", "+r('hubRegion.name')+", "+ref('basics','resourceScope.location.name')+"), coalesce("+ref('policies','commonPolicyRegion.name')+", "+ref('basics','resourceScope.location.name')+"))")
-    field('firewallPublicIpCount',"int("+r('firewallPublicIpCount')+")",False)
-    field('firewallZones',r('firewallZones'),False)
+    field('firewallPublicIpCount', numeric('firewallPublicIpCount', 1), False)
+    field('firewallZones', "if(empty("+r('firewallZones')+"), '[]', "+r('firewallZones')+")", False)
     literal(',"s2sVpnParameters":{"deployS2SVpnGateway":')
     pieces.append(r('deployVpnGateway'))
     literal(',"vpnGatewayName":"');pieces.append("concat("+r('hubName')+", '-vpn')");literal('","vpnGatewayScaleUnit":')
-    pieces.append("int("+r('vpnScaleUnits')+")");literal('}')
+    pieces.append(numeric('vpnScaleUnits', 1));literal('}')
     literal(',"expressRouteParameters":{"deployExpressRouteGateway":');pieces.append(r('deployExpressRouteGateway'))
     literal(',"expressRouteGatewayName":"');pieces.append("concat("+r('hubName')+", '-er')");literal('","autoScaleConfigurationBoundsMin":')
-    pieces.append("int("+r('expressRouteMinScaleUnits')+")");literal(',"autoScaleConfigurationBoundsMax":')
-    pieces.append("int("+r('expressRouteMaxScaleUnits')+")");literal('},"ruleCollectionGroups":[],"tags":{}}')
+    pieces.append(numeric('expressRouteMinScaleUnits', 1));literal(',"autoScaleConfigurationBoundsMax":')
+    pieces.append(numeric('expressRouteMaxScaleUnits', 2));literal('},"ruleCollectionGroups":[],"tags":{}}')
     return 'concat('+', '.join(pieces)+')'
 
 def build():
@@ -171,7 +174,7 @@ def build():
         'enableWorkbook':expr("and(bool("+ref('monitoring','enableLogging')+"), bool("+ref('monitoring','enableWorkbook')+"))"),
         'workspaceName':expr(ref('monitoring','workspaceName')),
         'workspaceLocation':expr("coalesce("+ref('monitoring','workspaceRegion.name')+", "+ref('basics','resourceScope.location.name')+")"),
-        'logRetentionDays':expr("int("+ref('monitoring','logRetentionDays')+")"),
+        'logRetentionDays':expr("int(if(empty("+ref('monitoring','logRetentionDays')+"), '30', "+ref('monitoring','logRetentionDays')+"))"),
         'workbookDisplayNamePrefix':expr(ref('monitoring','workbookDisplayNamePrefix'))}
     return {'$schema':SCHEMA,'view':{'kind':'Form','properties':{'title':'Elrehan Academy — Azure vWAN Multi-Hub','steps':[basics,network,policies,hubs,monitoring,review]},'outputs':{'kind':'ResourceGroup','location':expr(ref('basics','resourceScope.location.name')),'resourceGroupId':expr(ref('basics','resourceScope.resourceGroup.id')),'parameters':parameters}}}
 

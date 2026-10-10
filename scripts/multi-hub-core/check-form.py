@@ -48,7 +48,7 @@ class Expression:
             def s(v):return json.dumps(v,separators=(',',':')) if isinstance(v,(dict,list,bool)) else str(v)
             functions={
                 'steps':lambda name:state.get(name,{}),
-                'concat':lambda *v:''.join(s(x) for x in v),
+                'concat':lambda *v:''.join(v),
                 'parse':json.loads,'int':int,'string':s,
                 'bool':lambda v:v if isinstance(v,bool) else str(v).lower()=='true',
                 'equals':lambda a,b:a==b,'not':lambda v:not v,
