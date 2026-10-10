@@ -4,3 +4,6 @@
 __pycache__/
 *.pyc
 test-harness.local*.json
+
+# Multi-Hub private configuration, generated parameters and outputs
+multi-hub.local*.json

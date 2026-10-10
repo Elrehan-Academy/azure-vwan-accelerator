@@ -1,0 +1,61 @@
+{
+  "subscriptionId": "00000000-0000-0000-0000-000000000000",
+  "resourceGroup": "rg-vwan-multi-parentchildren",
+  "virtualWanName": "vwan-multi-parentchildren",
+  "virtualWanLocation": "westeurope",
+  "policyMode": "ParentChildren",
+  "hubs": [
+    {
+      "hubName": "hub-west",
+      "hubLocation": "westeurope",
+      "hubAddressPrefix": "10.250.0.0/22",
+      "inspectionMode": "Both",
+      "tags": {},
+      "ruleCollectionGroups": [],
+      "firewallPublicIpCount": 1,
+      "firewallZones": [],
+      "firewallName": "hub-west-fw",
+      "firewallPolicyName": "hub-west-policy",
+      "firewallPolicyLocation": "westeurope",
+      "s2sVpnParameters": {
+        "deployS2SVpnGateway": false
+      },
+      "expressRouteParameters": {
+        "deployExpressRouteGateway": false
+      }
+    },
+    {
+      "hubName": "hub-north",
+      "hubLocation": "northeurope",
+      "hubAddressPrefix": "10.250.4.0/22",
+      "inspectionMode": "Both",
+      "tags": {},
+      "ruleCollectionGroups": [],
+      "firewallPublicIpCount": 1,
+      "firewallZones": [],
+      "firewallName": "hub-north-fw",
+      "firewallPolicyName": "hub-north-policy",
+      "firewallPolicyLocation": "westeurope",
+      "s2sVpnParameters": {
+        "deployS2SVpnGateway": false
+      },
+      "expressRouteParameters": {
+        "deployExpressRouteGateway": false
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "firewallTier": "Standard",
+  "commonPolicyName": "vwan-multi-parentchildren-policy",
+  "commonPolicyLocation": "westeurope",
+  "commonRuleCollectionGroups": [],
+  "threatIntelMode": "Deny",
+  "enableDnsProxy": false,
+  "tags": {},
+  "enableLogging": true,
+  "workspaceName": "vwan-multi-parentchildren-logs",
+  "workspaceLocation": "westeurope",
+  "logRetentionDays": 30,
+  "enableWorkbook": true,
+  "workbookDisplayNamePrefix": "Azure vWAN - Firewall Observability"
+}

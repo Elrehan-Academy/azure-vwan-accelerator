@@ -35,7 +35,8 @@
           "inspectionMode": "Both",
           "tags": {
             "region": "west"
-          }
+          },
+          "firewallPolicyLocation": "westeurope"
         },
         {
           "hubName": "hub-north",
@@ -44,7 +45,8 @@
           "inspectionMode": "Both",
           "tags": {
             "region": "north"
-          }
+          },
+          "firewallPolicyLocation": "westeurope"
         }
       ]
     },

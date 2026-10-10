@@ -1,0 +1,1564 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2021-09-09/uiFormDefinition.schema.json#",
+  "view": {
+    "kind": "Form",
+    "properties": {
+      "title": "Elrehan Academy — Azure vWAN Multi-Hub",
+      "steps": [
+        {
+          "name": "basics",
+          "label": "Basics",
+          "elements": [
+            {
+              "name": "resourceScope",
+              "type": "Microsoft.Common.ResourceScope",
+              "resourceGroup": {
+                "allowExisting": false
+              },
+              "location": {
+                "resourceTypes": [
+                  "Microsoft.Resources/resourceGroups"
+                ]
+              }
+            },
+            {
+              "name": "introduction",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": true,
+              "options": {
+                "style": "Info",
+                "text": "Elrehan Academy — deploy 2–4 regional vWAN hubs with optional firewall inspection and gateways. Workloads and traffic testing are configured separately. Azure resources incur charges. Use a dedicated new resource group."
+              }
+            }
+          ]
+        },
+        {
+          "name": "network",
+          "label": "Network",
+          "elements": [
+            {
+              "name": "virtualWanName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Virtual WAN name",
+              "defaultValue": "vwan-multi",
+              "visible": true,
+              "constraints": {
+                "required": true,
+                "validations": [
+                  {
+                    "regex": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,48}[A-Za-z0-9])?$",
+                    "message": "Use 1–50 letters, digits or hyphens; start and end with a letter or digit."
+                  }
+                ]
+              }
+            },
+            {
+              "name": "virtualWanRegion",
+              "type": "Microsoft.Common.LocationSelector",
+              "label": "Virtual WAN region",
+              "resourceTypes": [
+                "Microsoft.Network/virtualWans"
+              ],
+              "visible": true,
+              "scope": {
+                "subscriptionId": "[steps('basics').resourceScope.subscription.subscriptionId]"
+              }
+            },
+            {
+              "name": "hubCount",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Number of hubs",
+              "defaultValue": "2",
+              "visible": true,
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "2",
+                    "value": "2"
+                  },
+                  {
+                    "label": "3",
+                    "value": "3"
+                  },
+                  {
+                    "label": "4",
+                    "value": "4"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "prefixHelp",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": true,
+              "options": {
+                "style": "Info",
+                "text": "This portal wizard uses aligned private /22 hub prefixes. Each selected hub must have a different prefix. Also check overlap with your connected VNets and on-premises networks. Code-based configuration supports additional validated prefix sizes."
+              }
+            }
+          ]
+        },
+        {
+          "name": "policies",
+          "label": "Policies",
+          "elements": [
+            {
+              "name": "policyMode",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Policy mode",
+              "defaultValue": "ParentChildren",
+              "visible": true,
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "ParentChildren",
+                    "value": "ParentChildren"
+                  },
+                  {
+                    "label": "Shared",
+                    "value": "Shared"
+                  },
+                  {
+                    "label": "Separate",
+                    "value": "Separate"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "inheritance",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": "[equals(steps('policies').policyMode, 'ParentChildren')]",
+              "options": {
+                "style": "Info",
+                "text": "Parent and child policy resources must share one region. Child policy regions are assigned automatically. Hub and firewall regions remain independent."
+              }
+            },
+            {
+              "name": "sharedHelp",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": "[equals(steps('policies').policyMode, 'Shared')]",
+              "options": {
+                "style": "Info",
+                "text": "One shared policy can protect firewalls in different regions."
+              }
+            },
+            {
+              "name": "separateHelp",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": "[equals(steps('policies').policyMode, 'Separate')]",
+              "options": {
+                "style": "Info",
+                "text": "Each secured hub has an independent policy. Select its policy region in that hub section."
+              }
+            },
+            {
+              "name": "commonPolicyName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Parent / shared policy name",
+              "defaultValue": "[concat(steps('network').virtualWanName, '-policy')]",
+              "visible": "[not(equals(steps('policies').policyMode, 'Separate'))]",
+              "constraints": {
+                "required": true,
+                "validations": [
+                  {
+                    "regex": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,48}[A-Za-z0-9])?$",
+                    "message": "Use 1–50 letters, digits or hyphens; start and end with a letter or digit."
+                  }
+                ]
+              }
+            },
+            {
+              "name": "commonPolicyRegion",
+              "type": "Microsoft.Common.LocationSelector",
+              "label": "Parent / shared policy region",
+              "resourceTypes": [
+                "Microsoft.Network/firewallPolicies"
+              ],
+              "visible": "[not(equals(steps('policies').policyMode, 'Separate'))]",
+              "scope": {
+                "subscriptionId": "[steps('basics').resourceScope.subscription.subscriptionId]"
+              }
+            },
+            {
+              "name": "firewallTier",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Firewall tier",
+              "defaultValue": "Standard",
+              "visible": true,
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Standard",
+                    "value": "Standard"
+                  },
+                  {
+                    "label": "Premium",
+                    "value": "Premium"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "threatIntelMode",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Threat intelligence",
+              "defaultValue": "Deny",
+              "visible": true,
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Deny",
+                    "value": "Deny"
+                  },
+                  {
+                    "label": "Alert",
+                    "value": "Alert"
+                  },
+                  {
+                    "label": "Off",
+                    "value": "Off"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "enableDnsProxy",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Firewall DNS proxy",
+              "defaultValue": "Disabled",
+              "visible": true,
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Enabled",
+                    "value": "true"
+                  },
+                  {
+                    "label": "Disabled",
+                    "value": "false"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "hubs",
+          "label": "Hubs and gateways",
+          "elements": [
+            {
+              "name": "hub1",
+              "type": "Microsoft.Common.Section",
+              "label": "Hub 1",
+              "elements": [
+                {
+                  "name": "hubName",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Hub name",
+                  "defaultValue": "hub-01",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,48}[A-Za-z0-9])?$",
+                        "message": "Use 1–50 letters, digits or hyphens; start and end with a letter or digit."
+                      },
+                      {
+                        "isValid": "[or(not(equals(steps('policies').policyMode, 'ParentChildren')), equals(steps('hubs').hub1.inspectionMode, 'Disabled'), not(equals(toLower(concat(steps('hubs').hub1.hubName, '-policy')), toLower(steps('policies').commonPolicyName))))]",
+                        "message": "The generated child policy name must differ from the parent policy name."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "hubRegion",
+                  "type": "Microsoft.Common.LocationSelector",
+                  "label": "Hub and firewall region",
+                  "resourceTypes": [
+                    "Microsoft.Network/virtualHubs"
+                  ],
+                  "visible": true,
+                  "scope": {
+                    "subscriptionId": "[steps('basics').resourceScope.subscription.subscriptionId]"
+                  }
+                },
+                {
+                  "name": "hubAddressPrefix",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Hub address prefix",
+                  "defaultValue": "10.250.0.0/22",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^(?:10\\.(?:0|[1-9][0-9]?|1[0-9]{2}|2[0-4][0-9]|25[0-5])|172\\.(?:1[6-9]|2[0-9]|3[01])|192\\.168)\\.(?:0|4|8|12|16|20|24|28|32|36|40|44|48|52|56|60|64|68|72|76|80|84|88|92|96|100|104|108|112|116|120|124|128|132|136|140|144|148|152|156|160|164|168|172|176|180|184|188|192|196|200|204|208|212|216|220|224|228|232|236|240|244|248|252)\\.0/22$",
+                        "message": "Use an aligned RFC1918 /22 prefix, for example 10.250.4.0/22."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "inspectionMode",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Inspection mode",
+                  "defaultValue": "Both",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "Both",
+                        "value": "Both"
+                      },
+                      {
+                        "label": "Private",
+                        "value": "Private"
+                      },
+                      {
+                        "label": "Internet",
+                        "value": "Internet"
+                      },
+                      {
+                        "label": "FirewallOnly",
+                        "value": "FirewallOnly"
+                      },
+                      {
+                        "label": "Disabled",
+                        "value": "Disabled"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "inspectionHelp",
+                  "type": "Microsoft.Common.InfoBox",
+                  "visible": true,
+                  "options": {
+                    "style": "Info",
+                    "text": "Both inspects private and internet traffic. Private or Internet inspects the selected path. FirewallOnly creates a firewall without routing intent. Disabled creates no firewall. Firewall, policy and gateway names are derived from the hub name."
+                  }
+                },
+                {
+                  "name": "policyRegion",
+                  "type": "Microsoft.Common.LocationSelector",
+                  "label": "Independent policy region",
+                  "resourceTypes": [
+                    "Microsoft.Network/firewallPolicies"
+                  ],
+                  "visible": "[and(equals(steps('policies').policyMode, 'Separate'), not(equals(steps('hubs').hub1.inspectionMode, 'Disabled')))]",
+                  "scope": {
+                    "subscriptionId": "[steps('basics').resourceScope.subscription.subscriptionId]"
+                  }
+                },
+                {
+                  "name": "firewallPublicIpCount",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Firewall public IP count",
+                  "defaultValue": "1",
+                  "visible": "[not(equals(steps('hubs').hub1.inspectionMode, 'Disabled'))]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub1.firewallPublicIpCount), '0', steps('hubs').hub1.firewallPublicIpCount)), 1), lessOrEquals(int(if(empty(steps('hubs').hub1.firewallPublicIpCount), '0', steps('hubs').hub1.firewallPublicIpCount)), 80))]",
+                        "message": "Enter a whole number from 1 to 80."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "firewallZones",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Firewall availability zones",
+                  "defaultValue": "No zone selection",
+                  "visible": "[not(equals(steps('hubs').hub1.inspectionMode, 'Disabled'))]",
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "No zone selection",
+                        "value": "[]"
+                      },
+                      {
+                        "label": "Zone 1",
+                        "value": "[1]"
+                      },
+                      {
+                        "label": "Zone 2",
+                        "value": "[2]"
+                      },
+                      {
+                        "label": "Zone 3",
+                        "value": "[3]"
+                      },
+                      {
+                        "label": "Zones 1, 2 and 3",
+                        "value": "[1,2,3]"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "deployVpnGateway",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Create site-to-site VPN gateway",
+                  "defaultValue": "Disabled",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "Enabled",
+                        "value": "true"
+                      },
+                      {
+                        "label": "Disabled",
+                        "value": "false"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "vpnScaleUnits",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "VPN scale units",
+                  "defaultValue": "1",
+                  "visible": "[bool(steps('hubs').hub1.deployVpnGateway)]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub1.vpnScaleUnits), '0', steps('hubs').hub1.vpnScaleUnits)), 1), lessOrEquals(int(if(empty(steps('hubs').hub1.vpnScaleUnits), '0', steps('hubs').hub1.vpnScaleUnits)), 20))]",
+                        "message": "Enter a whole number from 1 to 20."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "deployExpressRouteGateway",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Create ExpressRoute gateway",
+                  "defaultValue": "Disabled",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "Enabled",
+                        "value": "true"
+                      },
+                      {
+                        "label": "Disabled",
+                        "value": "false"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "expressRouteMinScaleUnits",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "ExpressRoute minimum scale units",
+                  "defaultValue": "1",
+                  "visible": "[bool(steps('hubs').hub1.deployExpressRouteGateway)]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub1.expressRouteMinScaleUnits), '0', steps('hubs').hub1.expressRouteMinScaleUnits)), 1), lessOrEquals(int(if(empty(steps('hubs').hub1.expressRouteMinScaleUnits), '0', steps('hubs').hub1.expressRouteMinScaleUnits)), 10))]",
+                        "message": "Enter a whole number from 1 to 10."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "expressRouteMaxScaleUnits",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "ExpressRoute maximum scale units",
+                  "defaultValue": "2",
+                  "visible": "[bool(steps('hubs').hub1.deployExpressRouteGateway)]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub1.expressRouteMaxScaleUnits), '0', steps('hubs').hub1.expressRouteMaxScaleUnits)), 1), lessOrEquals(int(if(empty(steps('hubs').hub1.expressRouteMaxScaleUnits), '0', steps('hubs').hub1.expressRouteMaxScaleUnits)), 10))]",
+                        "message": "Enter a whole number from 1 to 10."
+                      },
+                      {
+                        "isValid": "[greaterOrEquals(int(steps('hubs').hub1.expressRouteMaxScaleUnits), int(steps('hubs').hub1.expressRouteMinScaleUnits))]",
+                        "message": "ExpressRoute maximum must be at least the minimum."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "visible": "[greaterOrEquals(int(steps('network').hubCount), 1)]"
+            },
+            {
+              "name": "hub2",
+              "type": "Microsoft.Common.Section",
+              "label": "Hub 2",
+              "elements": [
+                {
+                  "name": "hubName",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Hub name",
+                  "defaultValue": "hub-02",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,48}[A-Za-z0-9])?$",
+                        "message": "Use 1–50 letters, digits or hyphens; start and end with a letter or digit."
+                      },
+                      {
+                        "isValid": "[not(equals(toLower(steps('hubs').hub2.hubName), toLower(steps('hubs').hub1.hubName)))]",
+                        "message": "Hub name must differ from Hub 1."
+                      },
+                      {
+                        "isValid": "[or(not(equals(steps('policies').policyMode, 'ParentChildren')), equals(steps('hubs').hub2.inspectionMode, 'Disabled'), not(equals(toLower(concat(steps('hubs').hub2.hubName, '-policy')), toLower(steps('policies').commonPolicyName))))]",
+                        "message": "The generated child policy name must differ from the parent policy name."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "hubRegion",
+                  "type": "Microsoft.Common.LocationSelector",
+                  "label": "Hub and firewall region",
+                  "resourceTypes": [
+                    "Microsoft.Network/virtualHubs"
+                  ],
+                  "visible": true,
+                  "scope": {
+                    "subscriptionId": "[steps('basics').resourceScope.subscription.subscriptionId]"
+                  }
+                },
+                {
+                  "name": "hubAddressPrefix",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Hub address prefix",
+                  "defaultValue": "10.250.4.0/22",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^(?:10\\.(?:0|[1-9][0-9]?|1[0-9]{2}|2[0-4][0-9]|25[0-5])|172\\.(?:1[6-9]|2[0-9]|3[01])|192\\.168)\\.(?:0|4|8|12|16|20|24|28|32|36|40|44|48|52|56|60|64|68|72|76|80|84|88|92|96|100|104|108|112|116|120|124|128|132|136|140|144|148|152|156|160|164|168|172|176|180|184|188|192|196|200|204|208|212|216|220|224|228|232|236|240|244|248|252)\\.0/22$",
+                        "message": "Use an aligned RFC1918 /22 prefix, for example 10.250.4.0/22."
+                      },
+                      {
+                        "isValid": "[not(equals(steps('hubs').hub2.hubAddressPrefix, steps('hubs').hub1.hubAddressPrefix))]",
+                        "message": "Hub prefix overlaps Hub 1; select another aligned /22 prefix."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "inspectionMode",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Inspection mode",
+                  "defaultValue": "Both",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "Both",
+                        "value": "Both"
+                      },
+                      {
+                        "label": "Private",
+                        "value": "Private"
+                      },
+                      {
+                        "label": "Internet",
+                        "value": "Internet"
+                      },
+                      {
+                        "label": "FirewallOnly",
+                        "value": "FirewallOnly"
+                      },
+                      {
+                        "label": "Disabled",
+                        "value": "Disabled"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "inspectionHelp",
+                  "type": "Microsoft.Common.InfoBox",
+                  "visible": true,
+                  "options": {
+                    "style": "Info",
+                    "text": "Both inspects private and internet traffic. Private or Internet inspects the selected path. FirewallOnly creates a firewall without routing intent. Disabled creates no firewall. Firewall, policy and gateway names are derived from the hub name."
+                  }
+                },
+                {
+                  "name": "policyRegion",
+                  "type": "Microsoft.Common.LocationSelector",
+                  "label": "Independent policy region",
+                  "resourceTypes": [
+                    "Microsoft.Network/firewallPolicies"
+                  ],
+                  "visible": "[and(equals(steps('policies').policyMode, 'Separate'), not(equals(steps('hubs').hub2.inspectionMode, 'Disabled')))]",
+                  "scope": {
+                    "subscriptionId": "[steps('basics').resourceScope.subscription.subscriptionId]"
+                  }
+                },
+                {
+                  "name": "firewallPublicIpCount",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Firewall public IP count",
+                  "defaultValue": "1",
+                  "visible": "[not(equals(steps('hubs').hub2.inspectionMode, 'Disabled'))]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub2.firewallPublicIpCount), '0', steps('hubs').hub2.firewallPublicIpCount)), 1), lessOrEquals(int(if(empty(steps('hubs').hub2.firewallPublicIpCount), '0', steps('hubs').hub2.firewallPublicIpCount)), 80))]",
+                        "message": "Enter a whole number from 1 to 80."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "firewallZones",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Firewall availability zones",
+                  "defaultValue": "No zone selection",
+                  "visible": "[not(equals(steps('hubs').hub2.inspectionMode, 'Disabled'))]",
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "No zone selection",
+                        "value": "[]"
+                      },
+                      {
+                        "label": "Zone 1",
+                        "value": "[1]"
+                      },
+                      {
+                        "label": "Zone 2",
+                        "value": "[2]"
+                      },
+                      {
+                        "label": "Zone 3",
+                        "value": "[3]"
+                      },
+                      {
+                        "label": "Zones 1, 2 and 3",
+                        "value": "[1,2,3]"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "deployVpnGateway",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Create site-to-site VPN gateway",
+                  "defaultValue": "Disabled",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "Enabled",
+                        "value": "true"
+                      },
+                      {
+                        "label": "Disabled",
+                        "value": "false"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "vpnScaleUnits",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "VPN scale units",
+                  "defaultValue": "1",
+                  "visible": "[bool(steps('hubs').hub2.deployVpnGateway)]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub2.vpnScaleUnits), '0', steps('hubs').hub2.vpnScaleUnits)), 1), lessOrEquals(int(if(empty(steps('hubs').hub2.vpnScaleUnits), '0', steps('hubs').hub2.vpnScaleUnits)), 20))]",
+                        "message": "Enter a whole number from 1 to 20."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "deployExpressRouteGateway",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Create ExpressRoute gateway",
+                  "defaultValue": "Disabled",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "Enabled",
+                        "value": "true"
+                      },
+                      {
+                        "label": "Disabled",
+                        "value": "false"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "expressRouteMinScaleUnits",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "ExpressRoute minimum scale units",
+                  "defaultValue": "1",
+                  "visible": "[bool(steps('hubs').hub2.deployExpressRouteGateway)]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub2.expressRouteMinScaleUnits), '0', steps('hubs').hub2.expressRouteMinScaleUnits)), 1), lessOrEquals(int(if(empty(steps('hubs').hub2.expressRouteMinScaleUnits), '0', steps('hubs').hub2.expressRouteMinScaleUnits)), 10))]",
+                        "message": "Enter a whole number from 1 to 10."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "expressRouteMaxScaleUnits",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "ExpressRoute maximum scale units",
+                  "defaultValue": "2",
+                  "visible": "[bool(steps('hubs').hub2.deployExpressRouteGateway)]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub2.expressRouteMaxScaleUnits), '0', steps('hubs').hub2.expressRouteMaxScaleUnits)), 1), lessOrEquals(int(if(empty(steps('hubs').hub2.expressRouteMaxScaleUnits), '0', steps('hubs').hub2.expressRouteMaxScaleUnits)), 10))]",
+                        "message": "Enter a whole number from 1 to 10."
+                      },
+                      {
+                        "isValid": "[greaterOrEquals(int(steps('hubs').hub2.expressRouteMaxScaleUnits), int(steps('hubs').hub2.expressRouteMinScaleUnits))]",
+                        "message": "ExpressRoute maximum must be at least the minimum."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "visible": "[greaterOrEquals(int(steps('network').hubCount), 2)]"
+            },
+            {
+              "name": "hub3",
+              "type": "Microsoft.Common.Section",
+              "label": "Hub 3",
+              "elements": [
+                {
+                  "name": "hubName",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Hub name",
+                  "defaultValue": "hub-03",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,48}[A-Za-z0-9])?$",
+                        "message": "Use 1–50 letters, digits or hyphens; start and end with a letter or digit."
+                      },
+                      {
+                        "isValid": "[not(equals(toLower(steps('hubs').hub3.hubName), toLower(steps('hubs').hub1.hubName)))]",
+                        "message": "Hub name must differ from Hub 1."
+                      },
+                      {
+                        "isValid": "[not(equals(toLower(steps('hubs').hub3.hubName), toLower(steps('hubs').hub2.hubName)))]",
+                        "message": "Hub name must differ from Hub 2."
+                      },
+                      {
+                        "isValid": "[or(not(equals(steps('policies').policyMode, 'ParentChildren')), equals(steps('hubs').hub3.inspectionMode, 'Disabled'), not(equals(toLower(concat(steps('hubs').hub3.hubName, '-policy')), toLower(steps('policies').commonPolicyName))))]",
+                        "message": "The generated child policy name must differ from the parent policy name."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "hubRegion",
+                  "type": "Microsoft.Common.LocationSelector",
+                  "label": "Hub and firewall region",
+                  "resourceTypes": [
+                    "Microsoft.Network/virtualHubs"
+                  ],
+                  "visible": true,
+                  "scope": {
+                    "subscriptionId": "[steps('basics').resourceScope.subscription.subscriptionId]"
+                  }
+                },
+                {
+                  "name": "hubAddressPrefix",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Hub address prefix",
+                  "defaultValue": "10.250.8.0/22",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^(?:10\\.(?:0|[1-9][0-9]?|1[0-9]{2}|2[0-4][0-9]|25[0-5])|172\\.(?:1[6-9]|2[0-9]|3[01])|192\\.168)\\.(?:0|4|8|12|16|20|24|28|32|36|40|44|48|52|56|60|64|68|72|76|80|84|88|92|96|100|104|108|112|116|120|124|128|132|136|140|144|148|152|156|160|164|168|172|176|180|184|188|192|196|200|204|208|212|216|220|224|228|232|236|240|244|248|252)\\.0/22$",
+                        "message": "Use an aligned RFC1918 /22 prefix, for example 10.250.4.0/22."
+                      },
+                      {
+                        "isValid": "[not(equals(steps('hubs').hub3.hubAddressPrefix, steps('hubs').hub1.hubAddressPrefix))]",
+                        "message": "Hub prefix overlaps Hub 1; select another aligned /22 prefix."
+                      },
+                      {
+                        "isValid": "[not(equals(steps('hubs').hub3.hubAddressPrefix, steps('hubs').hub2.hubAddressPrefix))]",
+                        "message": "Hub prefix overlaps Hub 2; select another aligned /22 prefix."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "inspectionMode",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Inspection mode",
+                  "defaultValue": "Both",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "Both",
+                        "value": "Both"
+                      },
+                      {
+                        "label": "Private",
+                        "value": "Private"
+                      },
+                      {
+                        "label": "Internet",
+                        "value": "Internet"
+                      },
+                      {
+                        "label": "FirewallOnly",
+                        "value": "FirewallOnly"
+                      },
+                      {
+                        "label": "Disabled",
+                        "value": "Disabled"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "inspectionHelp",
+                  "type": "Microsoft.Common.InfoBox",
+                  "visible": true,
+                  "options": {
+                    "style": "Info",
+                    "text": "Both inspects private and internet traffic. Private or Internet inspects the selected path. FirewallOnly creates a firewall without routing intent. Disabled creates no firewall. Firewall, policy and gateway names are derived from the hub name."
+                  }
+                },
+                {
+                  "name": "policyRegion",
+                  "type": "Microsoft.Common.LocationSelector",
+                  "label": "Independent policy region",
+                  "resourceTypes": [
+                    "Microsoft.Network/firewallPolicies"
+                  ],
+                  "visible": "[and(equals(steps('policies').policyMode, 'Separate'), not(equals(steps('hubs').hub3.inspectionMode, 'Disabled')))]",
+                  "scope": {
+                    "subscriptionId": "[steps('basics').resourceScope.subscription.subscriptionId]"
+                  }
+                },
+                {
+                  "name": "firewallPublicIpCount",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Firewall public IP count",
+                  "defaultValue": "1",
+                  "visible": "[not(equals(steps('hubs').hub3.inspectionMode, 'Disabled'))]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub3.firewallPublicIpCount), '0', steps('hubs').hub3.firewallPublicIpCount)), 1), lessOrEquals(int(if(empty(steps('hubs').hub3.firewallPublicIpCount), '0', steps('hubs').hub3.firewallPublicIpCount)), 80))]",
+                        "message": "Enter a whole number from 1 to 80."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "firewallZones",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Firewall availability zones",
+                  "defaultValue": "No zone selection",
+                  "visible": "[not(equals(steps('hubs').hub3.inspectionMode, 'Disabled'))]",
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "No zone selection",
+                        "value": "[]"
+                      },
+                      {
+                        "label": "Zone 1",
+                        "value": "[1]"
+                      },
+                      {
+                        "label": "Zone 2",
+                        "value": "[2]"
+                      },
+                      {
+                        "label": "Zone 3",
+                        "value": "[3]"
+                      },
+                      {
+                        "label": "Zones 1, 2 and 3",
+                        "value": "[1,2,3]"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "deployVpnGateway",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Create site-to-site VPN gateway",
+                  "defaultValue": "Disabled",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "Enabled",
+                        "value": "true"
+                      },
+                      {
+                        "label": "Disabled",
+                        "value": "false"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "vpnScaleUnits",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "VPN scale units",
+                  "defaultValue": "1",
+                  "visible": "[bool(steps('hubs').hub3.deployVpnGateway)]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub3.vpnScaleUnits), '0', steps('hubs').hub3.vpnScaleUnits)), 1), lessOrEquals(int(if(empty(steps('hubs').hub3.vpnScaleUnits), '0', steps('hubs').hub3.vpnScaleUnits)), 20))]",
+                        "message": "Enter a whole number from 1 to 20."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "deployExpressRouteGateway",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Create ExpressRoute gateway",
+                  "defaultValue": "Disabled",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "Enabled",
+                        "value": "true"
+                      },
+                      {
+                        "label": "Disabled",
+                        "value": "false"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "expressRouteMinScaleUnits",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "ExpressRoute minimum scale units",
+                  "defaultValue": "1",
+                  "visible": "[bool(steps('hubs').hub3.deployExpressRouteGateway)]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub3.expressRouteMinScaleUnits), '0', steps('hubs').hub3.expressRouteMinScaleUnits)), 1), lessOrEquals(int(if(empty(steps('hubs').hub3.expressRouteMinScaleUnits), '0', steps('hubs').hub3.expressRouteMinScaleUnits)), 10))]",
+                        "message": "Enter a whole number from 1 to 10."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "expressRouteMaxScaleUnits",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "ExpressRoute maximum scale units",
+                  "defaultValue": "2",
+                  "visible": "[bool(steps('hubs').hub3.deployExpressRouteGateway)]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub3.expressRouteMaxScaleUnits), '0', steps('hubs').hub3.expressRouteMaxScaleUnits)), 1), lessOrEquals(int(if(empty(steps('hubs').hub3.expressRouteMaxScaleUnits), '0', steps('hubs').hub3.expressRouteMaxScaleUnits)), 10))]",
+                        "message": "Enter a whole number from 1 to 10."
+                      },
+                      {
+                        "isValid": "[greaterOrEquals(int(steps('hubs').hub3.expressRouteMaxScaleUnits), int(steps('hubs').hub3.expressRouteMinScaleUnits))]",
+                        "message": "ExpressRoute maximum must be at least the minimum."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "visible": "[greaterOrEquals(int(steps('network').hubCount), 3)]"
+            },
+            {
+              "name": "hub4",
+              "type": "Microsoft.Common.Section",
+              "label": "Hub 4",
+              "elements": [
+                {
+                  "name": "hubName",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Hub name",
+                  "defaultValue": "hub-04",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,48}[A-Za-z0-9])?$",
+                        "message": "Use 1–50 letters, digits or hyphens; start and end with a letter or digit."
+                      },
+                      {
+                        "isValid": "[not(equals(toLower(steps('hubs').hub4.hubName), toLower(steps('hubs').hub1.hubName)))]",
+                        "message": "Hub name must differ from Hub 1."
+                      },
+                      {
+                        "isValid": "[not(equals(toLower(steps('hubs').hub4.hubName), toLower(steps('hubs').hub2.hubName)))]",
+                        "message": "Hub name must differ from Hub 2."
+                      },
+                      {
+                        "isValid": "[not(equals(toLower(steps('hubs').hub4.hubName), toLower(steps('hubs').hub3.hubName)))]",
+                        "message": "Hub name must differ from Hub 3."
+                      },
+                      {
+                        "isValid": "[or(not(equals(steps('policies').policyMode, 'ParentChildren')), equals(steps('hubs').hub4.inspectionMode, 'Disabled'), not(equals(toLower(concat(steps('hubs').hub4.hubName, '-policy')), toLower(steps('policies').commonPolicyName))))]",
+                        "message": "The generated child policy name must differ from the parent policy name."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "hubRegion",
+                  "type": "Microsoft.Common.LocationSelector",
+                  "label": "Hub and firewall region",
+                  "resourceTypes": [
+                    "Microsoft.Network/virtualHubs"
+                  ],
+                  "visible": true,
+                  "scope": {
+                    "subscriptionId": "[steps('basics').resourceScope.subscription.subscriptionId]"
+                  }
+                },
+                {
+                  "name": "hubAddressPrefix",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Hub address prefix",
+                  "defaultValue": "10.250.12.0/22",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^(?:10\\.(?:0|[1-9][0-9]?|1[0-9]{2}|2[0-4][0-9]|25[0-5])|172\\.(?:1[6-9]|2[0-9]|3[01])|192\\.168)\\.(?:0|4|8|12|16|20|24|28|32|36|40|44|48|52|56|60|64|68|72|76|80|84|88|92|96|100|104|108|112|116|120|124|128|132|136|140|144|148|152|156|160|164|168|172|176|180|184|188|192|196|200|204|208|212|216|220|224|228|232|236|240|244|248|252)\\.0/22$",
+                        "message": "Use an aligned RFC1918 /22 prefix, for example 10.250.4.0/22."
+                      },
+                      {
+                        "isValid": "[not(equals(steps('hubs').hub4.hubAddressPrefix, steps('hubs').hub1.hubAddressPrefix))]",
+                        "message": "Hub prefix overlaps Hub 1; select another aligned /22 prefix."
+                      },
+                      {
+                        "isValid": "[not(equals(steps('hubs').hub4.hubAddressPrefix, steps('hubs').hub2.hubAddressPrefix))]",
+                        "message": "Hub prefix overlaps Hub 2; select another aligned /22 prefix."
+                      },
+                      {
+                        "isValid": "[not(equals(steps('hubs').hub4.hubAddressPrefix, steps('hubs').hub3.hubAddressPrefix))]",
+                        "message": "Hub prefix overlaps Hub 3; select another aligned /22 prefix."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "inspectionMode",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Inspection mode",
+                  "defaultValue": "Both",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "Both",
+                        "value": "Both"
+                      },
+                      {
+                        "label": "Private",
+                        "value": "Private"
+                      },
+                      {
+                        "label": "Internet",
+                        "value": "Internet"
+                      },
+                      {
+                        "label": "FirewallOnly",
+                        "value": "FirewallOnly"
+                      },
+                      {
+                        "label": "Disabled",
+                        "value": "Disabled"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "inspectionHelp",
+                  "type": "Microsoft.Common.InfoBox",
+                  "visible": true,
+                  "options": {
+                    "style": "Info",
+                    "text": "Both inspects private and internet traffic. Private or Internet inspects the selected path. FirewallOnly creates a firewall without routing intent. Disabled creates no firewall. Firewall, policy and gateway names are derived from the hub name."
+                  }
+                },
+                {
+                  "name": "policyRegion",
+                  "type": "Microsoft.Common.LocationSelector",
+                  "label": "Independent policy region",
+                  "resourceTypes": [
+                    "Microsoft.Network/firewallPolicies"
+                  ],
+                  "visible": "[and(equals(steps('policies').policyMode, 'Separate'), not(equals(steps('hubs').hub4.inspectionMode, 'Disabled')))]",
+                  "scope": {
+                    "subscriptionId": "[steps('basics').resourceScope.subscription.subscriptionId]"
+                  }
+                },
+                {
+                  "name": "firewallPublicIpCount",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Firewall public IP count",
+                  "defaultValue": "1",
+                  "visible": "[not(equals(steps('hubs').hub4.inspectionMode, 'Disabled'))]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub4.firewallPublicIpCount), '0', steps('hubs').hub4.firewallPublicIpCount)), 1), lessOrEquals(int(if(empty(steps('hubs').hub4.firewallPublicIpCount), '0', steps('hubs').hub4.firewallPublicIpCount)), 80))]",
+                        "message": "Enter a whole number from 1 to 80."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "firewallZones",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Firewall availability zones",
+                  "defaultValue": "No zone selection",
+                  "visible": "[not(equals(steps('hubs').hub4.inspectionMode, 'Disabled'))]",
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "No zone selection",
+                        "value": "[]"
+                      },
+                      {
+                        "label": "Zone 1",
+                        "value": "[1]"
+                      },
+                      {
+                        "label": "Zone 2",
+                        "value": "[2]"
+                      },
+                      {
+                        "label": "Zone 3",
+                        "value": "[3]"
+                      },
+                      {
+                        "label": "Zones 1, 2 and 3",
+                        "value": "[1,2,3]"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "deployVpnGateway",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Create site-to-site VPN gateway",
+                  "defaultValue": "Disabled",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "Enabled",
+                        "value": "true"
+                      },
+                      {
+                        "label": "Disabled",
+                        "value": "false"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "vpnScaleUnits",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "VPN scale units",
+                  "defaultValue": "1",
+                  "visible": "[bool(steps('hubs').hub4.deployVpnGateway)]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub4.vpnScaleUnits), '0', steps('hubs').hub4.vpnScaleUnits)), 1), lessOrEquals(int(if(empty(steps('hubs').hub4.vpnScaleUnits), '0', steps('hubs').hub4.vpnScaleUnits)), 20))]",
+                        "message": "Enter a whole number from 1 to 20."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "deployExpressRouteGateway",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Create ExpressRoute gateway",
+                  "defaultValue": "Disabled",
+                  "visible": true,
+                  "constraints": {
+                    "required": true,
+                    "allowedValues": [
+                      {
+                        "label": "Enabled",
+                        "value": "true"
+                      },
+                      {
+                        "label": "Disabled",
+                        "value": "false"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "expressRouteMinScaleUnits",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "ExpressRoute minimum scale units",
+                  "defaultValue": "1",
+                  "visible": "[bool(steps('hubs').hub4.deployExpressRouteGateway)]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub4.expressRouteMinScaleUnits), '0', steps('hubs').hub4.expressRouteMinScaleUnits)), 1), lessOrEquals(int(if(empty(steps('hubs').hub4.expressRouteMinScaleUnits), '0', steps('hubs').hub4.expressRouteMinScaleUnits)), 10))]",
+                        "message": "Enter a whole number from 1 to 10."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "expressRouteMaxScaleUnits",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "ExpressRoute maximum scale units",
+                  "defaultValue": "2",
+                  "visible": "[bool(steps('hubs').hub4.deployExpressRouteGateway)]",
+                  "constraints": {
+                    "required": true,
+                    "validations": [
+                      {
+                        "regex": "^[0-9]+$",
+                        "message": "Enter a whole number."
+                      },
+                      {
+                        "isValid": "[and(greaterOrEquals(int(if(empty(steps('hubs').hub4.expressRouteMaxScaleUnits), '0', steps('hubs').hub4.expressRouteMaxScaleUnits)), 1), lessOrEquals(int(if(empty(steps('hubs').hub4.expressRouteMaxScaleUnits), '0', steps('hubs').hub4.expressRouteMaxScaleUnits)), 10))]",
+                        "message": "Enter a whole number from 1 to 10."
+                      },
+                      {
+                        "isValid": "[greaterOrEquals(int(steps('hubs').hub4.expressRouteMaxScaleUnits), int(steps('hubs').hub4.expressRouteMinScaleUnits))]",
+                        "message": "ExpressRoute maximum must be at least the minimum."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "visible": "[greaterOrEquals(int(steps('network').hubCount), 4)]"
+            }
+          ]
+        },
+        {
+          "name": "monitoring",
+          "label": "Monitoring",
+          "elements": [
+            {
+              "name": "enableLogging",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Firewall logging",
+              "defaultValue": "Enabled",
+              "visible": true,
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Enabled",
+                    "value": "true"
+                  },
+                  {
+                    "label": "Disabled",
+                    "value": "false"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "workspaceName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Shared Log Analytics workspace name",
+              "defaultValue": "[concat(steps('network').virtualWanName, '-logs')]",
+              "visible": "[bool(steps('monitoring').enableLogging)]",
+              "constraints": {
+                "required": true,
+                "validations": [
+                  {
+                    "regex": "^[A-Za-z0-9][A-Za-z0-9-]{2,61}[A-Za-z0-9]$",
+                    "message": "Use 4–63 letters, digits or hyphens; start/end with a letter or digit."
+                  }
+                ]
+              }
+            },
+            {
+              "name": "workspaceRegion",
+              "type": "Microsoft.Common.LocationSelector",
+              "label": "Shared workspace region",
+              "resourceTypes": [
+                "Microsoft.OperationalInsights/workspaces"
+              ],
+              "visible": "[bool(steps('monitoring').enableLogging)]",
+              "scope": {
+                "subscriptionId": "[steps('basics').resourceScope.subscription.subscriptionId]"
+              }
+            },
+            {
+              "name": "logRetentionDays",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Log retention days",
+              "defaultValue": "30",
+              "visible": "[bool(steps('monitoring').enableLogging)]",
+              "constraints": {
+                "required": true,
+                "validations": [
+                  {
+                    "regex": "^[0-9]+$",
+                    "message": "Enter a whole number."
+                  },
+                  {
+                    "isValid": "[and(greaterOrEquals(int(if(empty(steps('monitoring').logRetentionDays), '0', steps('monitoring').logRetentionDays)), 30), lessOrEquals(int(if(empty(steps('monitoring').logRetentionDays), '0', steps('monitoring').logRetentionDays)), 730))]",
+                    "message": "Enter a whole number from 30 to 730."
+                  }
+                ]
+              }
+            },
+            {
+              "name": "enableWorkbook",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Per-hub and consolidated workbooks",
+              "defaultValue": "Enabled",
+              "visible": "[bool(steps('monitoring').enableLogging)]",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Enabled",
+                    "value": "true"
+                  },
+                  {
+                    "label": "Disabled",
+                    "value": "false"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "workbookDisplayNamePrefix",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Workbook display-name prefix",
+              "defaultValue": "Azure vWAN - Firewall Observability",
+              "visible": "[bool(steps('monitoring').enableLogging)]",
+              "constraints": {
+                "required": true,
+                "validations": [
+                  {
+                    "regex": "^.{1,100}$",
+                    "message": "Enter 1–100 characters."
+                  }
+                ]
+              }
+            },
+            {
+              "name": "monitoringHelp",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": true,
+              "options": {
+                "style": "Info",
+                "text": "All firewall logs use one shared workspace. Workbooks retain the approved Azure Firewall layout: one per secured hub and one All Firewalls workbook. Assessment starts as Not assessed; provisioning does not create workloads or verify traffic."
+              }
+            }
+          ]
+        },
+        {
+          "name": "review",
+          "label": "Review settings",
+          "elements": [
+            {
+              "name": "summary",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": true,
+              "options": {
+                "style": "Warning",
+                "text": "[concat('Review: ', steps('network').hubCount, ' hubs; ', string(add(add(if(and(greaterOrEquals(int(steps('network').hubCount), 1), not(equals(steps('hubs').hub1.inspectionMode, 'Disabled'))), 1, 0), if(and(greaterOrEquals(int(steps('network').hubCount), 2), not(equals(steps('hubs').hub2.inspectionMode, 'Disabled'))), 1, 0)), add(if(and(greaterOrEquals(int(steps('network').hubCount), 3), not(equals(steps('hubs').hub3.inspectionMode, 'Disabled'))), 1, 0), if(and(greaterOrEquals(int(steps('network').hubCount), 4), not(equals(steps('hubs').hub4.inspectionMode, 'Disabled'))), 1, 0)))), ' firewalls; ', steps('policies').policyMode, ' policies; ', string(if(and(bool(steps('monitoring').enableLogging), bool(steps('monitoring').enableWorkbook), greater(add(add(if(and(greaterOrEquals(int(steps('network').hubCount), 1), not(equals(steps('hubs').hub1.inspectionMode, 'Disabled'))), 1, 0), if(and(greaterOrEquals(int(steps('network').hubCount), 2), not(equals(steps('hubs').hub2.inspectionMode, 'Disabled'))), 1, 0)), add(if(and(greaterOrEquals(int(steps('network').hubCount), 3), not(equals(steps('hubs').hub3.inspectionMode, 'Disabled'))), 1, 0), if(and(greaterOrEquals(int(steps('network').hubCount), 4), not(equals(steps('hubs').hub4.inspectionMode, 'Disabled'))), 1, 0))), 0)), add(add(add(if(and(greaterOrEquals(int(steps('network').hubCount), 1), not(equals(steps('hubs').hub1.inspectionMode, 'Disabled'))), 1, 0), if(and(greaterOrEquals(int(steps('network').hubCount), 2), not(equals(steps('hubs').hub2.inspectionMode, 'Disabled'))), 1, 0)), add(if(and(greaterOrEquals(int(steps('network').hubCount), 3), not(equals(steps('hubs').hub3.inspectionMode, 'Disabled'))), 1, 0), if(and(greaterOrEquals(int(steps('network').hubCount), 4), not(equals(steps('hubs').hub4.inspectionMode, 'Disabled'))), 1, 0))), 1), 0)), ' workbooks. Azure resources incur charges. Review the template changes before selecting Create.')]"
+              }
+            },
+            {
+              "name": "hub1Review",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": "[greaterOrEquals(int(steps('network').hubCount), 1)]",
+              "options": {
+                "style": "Info",
+                "text": "[concat(steps('hubs').hub1.hubName, ' | hub/firewall region: ', coalesce(steps('hubs').hub1.hubRegion.name, steps('basics').resourceScope.location.name), ' | prefix: ', steps('hubs').hub1.hubAddressPrefix, ' | inspection: ', steps('hubs').hub1.inspectionMode, ' | policy region: ', if(equals(steps('hubs').hub1.inspectionMode, 'Disabled'), 'none', if(equals(steps('policies').policyMode, 'Separate'), coalesce(steps('hubs').hub1.policyRegion.name, steps('hubs').hub1.hubRegion.name, steps('basics').resourceScope.location.name), coalesce(steps('policies').commonPolicyRegion.name, steps('basics').resourceScope.location.name))))]"
+              }
+            },
+            {
+              "name": "hub2Review",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": "[greaterOrEquals(int(steps('network').hubCount), 2)]",
+              "options": {
+                "style": "Info",
+                "text": "[concat(steps('hubs').hub2.hubName, ' | hub/firewall region: ', coalesce(steps('hubs').hub2.hubRegion.name, steps('basics').resourceScope.location.name), ' | prefix: ', steps('hubs').hub2.hubAddressPrefix, ' | inspection: ', steps('hubs').hub2.inspectionMode, ' | policy region: ', if(equals(steps('hubs').hub2.inspectionMode, 'Disabled'), 'none', if(equals(steps('policies').policyMode, 'Separate'), coalesce(steps('hubs').hub2.policyRegion.name, steps('hubs').hub2.hubRegion.name, steps('basics').resourceScope.location.name), coalesce(steps('policies').commonPolicyRegion.name, steps('basics').resourceScope.location.name))))]"
+              }
+            },
+            {
+              "name": "hub3Review",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": "[greaterOrEquals(int(steps('network').hubCount), 3)]",
+              "options": {
+                "style": "Info",
+                "text": "[concat(steps('hubs').hub3.hubName, ' | hub/firewall region: ', coalesce(steps('hubs').hub3.hubRegion.name, steps('basics').resourceScope.location.name), ' | prefix: ', steps('hubs').hub3.hubAddressPrefix, ' | inspection: ', steps('hubs').hub3.inspectionMode, ' | policy region: ', if(equals(steps('hubs').hub3.inspectionMode, 'Disabled'), 'none', if(equals(steps('policies').policyMode, 'Separate'), coalesce(steps('hubs').hub3.policyRegion.name, steps('hubs').hub3.hubRegion.name, steps('basics').resourceScope.location.name), coalesce(steps('policies').commonPolicyRegion.name, steps('basics').resourceScope.location.name))))]"
+              }
+            },
+            {
+              "name": "hub4Review",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": "[greaterOrEquals(int(steps('network').hubCount), 4)]",
+              "options": {
+                "style": "Info",
+                "text": "[concat(steps('hubs').hub4.hubName, ' | hub/firewall region: ', coalesce(steps('hubs').hub4.hubRegion.name, steps('basics').resourceScope.location.name), ' | prefix: ', steps('hubs').hub4.hubAddressPrefix, ' | inspection: ', steps('hubs').hub4.inspectionMode, ' | policy region: ', if(equals(steps('hubs').hub4.inspectionMode, 'Disabled'), 'none', if(equals(steps('policies').policyMode, 'Separate'), coalesce(steps('hubs').hub4.policyRegion.name, steps('hubs').hub4.hubRegion.name, steps('basics').resourceScope.location.name), coalesce(steps('policies').commonPolicyRegion.name, steps('basics').resourceScope.location.name))))]"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "outputs": {
+      "kind": "ResourceGroup",
+      "location": "[steps('basics').resourceScope.location.name]",
+      "resourceGroupId": "[steps('basics').resourceScope.resourceGroup.id]",
+      "parameters": {
+        "virtualWanName": "[steps('network').virtualWanName]",
+        "virtualWanLocation": "[coalesce(steps('network').virtualWanRegion.name, steps('basics').resourceScope.location.name)]",
+        "hubs": "[parse(concat('[', concat('{\"hubName\":\"', steps('hubs').hub1.hubName, '\"', ',\"hubLocation\":\"', coalesce(steps('hubs').hub1.hubRegion.name, steps('basics').resourceScope.location.name), '\"', ',\"hubAddressPrefix\":\"', steps('hubs').hub1.hubAddressPrefix, '\"', ',\"inspectionMode\":\"', steps('hubs').hub1.inspectionMode, '\"', ',\"firewallName\":\"', concat(steps('hubs').hub1.hubName, '-fw'), '\"', ',\"firewallPolicyName\":\"', concat(steps('hubs').hub1.hubName, '-policy'), '\"', ',\"firewallPolicyLocation\":\"', if(equals(steps('policies').policyMode, 'Separate'), coalesce(steps('hubs').hub1.policyRegion.name, steps('hubs').hub1.hubRegion.name, steps('basics').resourceScope.location.name), coalesce(steps('policies').commonPolicyRegion.name, steps('basics').resourceScope.location.name)), '\"', ',\"firewallPublicIpCount\":', int(steps('hubs').hub1.firewallPublicIpCount), ',\"firewallZones\":', steps('hubs').hub1.firewallZones, ',\"s2sVpnParameters\":{\"deployS2SVpnGateway\":', steps('hubs').hub1.deployVpnGateway, ',\"vpnGatewayName\":\"', concat(steps('hubs').hub1.hubName, '-vpn'), '\",\"vpnGatewayScaleUnit\":', int(steps('hubs').hub1.vpnScaleUnits), '}', ',\"expressRouteParameters\":{\"deployExpressRouteGateway\":', steps('hubs').hub1.deployExpressRouteGateway, ',\"expressRouteGatewayName\":\"', concat(steps('hubs').hub1.hubName, '-er'), '\",\"autoScaleConfigurationBoundsMin\":', int(steps('hubs').hub1.expressRouteMinScaleUnits), ',\"autoScaleConfigurationBoundsMax\":', int(steps('hubs').hub1.expressRouteMaxScaleUnits), '},\"ruleCollectionGroups\":[],\"tags\":{}}'), ',', concat('{\"hubName\":\"', steps('hubs').hub2.hubName, '\"', ',\"hubLocation\":\"', coalesce(steps('hubs').hub2.hubRegion.name, steps('basics').resourceScope.location.name), '\"', ',\"hubAddressPrefix\":\"', steps('hubs').hub2.hubAddressPrefix, '\"', ',\"inspectionMode\":\"', steps('hubs').hub2.inspectionMode, '\"', ',\"firewallName\":\"', concat(steps('hubs').hub2.hubName, '-fw'), '\"', ',\"firewallPolicyName\":\"', concat(steps('hubs').hub2.hubName, '-policy'), '\"', ',\"firewallPolicyLocation\":\"', if(equals(steps('policies').policyMode, 'Separate'), coalesce(steps('hubs').hub2.policyRegion.name, steps('hubs').hub2.hubRegion.name, steps('basics').resourceScope.location.name), coalesce(steps('policies').commonPolicyRegion.name, steps('basics').resourceScope.location.name)), '\"', ',\"firewallPublicIpCount\":', int(steps('hubs').hub2.firewallPublicIpCount), ',\"firewallZones\":', steps('hubs').hub2.firewallZones, ',\"s2sVpnParameters\":{\"deployS2SVpnGateway\":', steps('hubs').hub2.deployVpnGateway, ',\"vpnGatewayName\":\"', concat(steps('hubs').hub2.hubName, '-vpn'), '\",\"vpnGatewayScaleUnit\":', int(steps('hubs').hub2.vpnScaleUnits), '}', ',\"expressRouteParameters\":{\"deployExpressRouteGateway\":', steps('hubs').hub2.deployExpressRouteGateway, ',\"expressRouteGatewayName\":\"', concat(steps('hubs').hub2.hubName, '-er'), '\",\"autoScaleConfigurationBoundsMin\":', int(steps('hubs').hub2.expressRouteMinScaleUnits), ',\"autoScaleConfigurationBoundsMax\":', int(steps('hubs').hub2.expressRouteMaxScaleUnits), '},\"ruleCollectionGroups\":[],\"tags\":{}}'), if(greaterOrEquals(int(steps('network').hubCount), 3), concat(',', concat('{\"hubName\":\"', steps('hubs').hub3.hubName, '\"', ',\"hubLocation\":\"', coalesce(steps('hubs').hub3.hubRegion.name, steps('basics').resourceScope.location.name), '\"', ',\"hubAddressPrefix\":\"', steps('hubs').hub3.hubAddressPrefix, '\"', ',\"inspectionMode\":\"', steps('hubs').hub3.inspectionMode, '\"', ',\"firewallName\":\"', concat(steps('hubs').hub3.hubName, '-fw'), '\"', ',\"firewallPolicyName\":\"', concat(steps('hubs').hub3.hubName, '-policy'), '\"', ',\"firewallPolicyLocation\":\"', if(equals(steps('policies').policyMode, 'Separate'), coalesce(steps('hubs').hub3.policyRegion.name, steps('hubs').hub3.hubRegion.name, steps('basics').resourceScope.location.name), coalesce(steps('policies').commonPolicyRegion.name, steps('basics').resourceScope.location.name)), '\"', ',\"firewallPublicIpCount\":', int(steps('hubs').hub3.firewallPublicIpCount), ',\"firewallZones\":', steps('hubs').hub3.firewallZones, ',\"s2sVpnParameters\":{\"deployS2SVpnGateway\":', steps('hubs').hub3.deployVpnGateway, ',\"vpnGatewayName\":\"', concat(steps('hubs').hub3.hubName, '-vpn'), '\",\"vpnGatewayScaleUnit\":', int(steps('hubs').hub3.vpnScaleUnits), '}', ',\"expressRouteParameters\":{\"deployExpressRouteGateway\":', steps('hubs').hub3.deployExpressRouteGateway, ',\"expressRouteGatewayName\":\"', concat(steps('hubs').hub3.hubName, '-er'), '\",\"autoScaleConfigurationBoundsMin\":', int(steps('hubs').hub3.expressRouteMinScaleUnits), ',\"autoScaleConfigurationBoundsMax\":', int(steps('hubs').hub3.expressRouteMaxScaleUnits), '},\"ruleCollectionGroups\":[],\"tags\":{}}')), ''), if(greaterOrEquals(int(steps('network').hubCount), 4), concat(',', concat('{\"hubName\":\"', steps('hubs').hub4.hubName, '\"', ',\"hubLocation\":\"', coalesce(steps('hubs').hub4.hubRegion.name, steps('basics').resourceScope.location.name), '\"', ',\"hubAddressPrefix\":\"', steps('hubs').hub4.hubAddressPrefix, '\"', ',\"inspectionMode\":\"', steps('hubs').hub4.inspectionMode, '\"', ',\"firewallName\":\"', concat(steps('hubs').hub4.hubName, '-fw'), '\"', ',\"firewallPolicyName\":\"', concat(steps('hubs').hub4.hubName, '-policy'), '\"', ',\"firewallPolicyLocation\":\"', if(equals(steps('policies').policyMode, 'Separate'), coalesce(steps('hubs').hub4.policyRegion.name, steps('hubs').hub4.hubRegion.name, steps('basics').resourceScope.location.name), coalesce(steps('policies').commonPolicyRegion.name, steps('basics').resourceScope.location.name)), '\"', ',\"firewallPublicIpCount\":', int(steps('hubs').hub4.firewallPublicIpCount), ',\"firewallZones\":', steps('hubs').hub4.firewallZones, ',\"s2sVpnParameters\":{\"deployS2SVpnGateway\":', steps('hubs').hub4.deployVpnGateway, ',\"vpnGatewayName\":\"', concat(steps('hubs').hub4.hubName, '-vpn'), '\",\"vpnGatewayScaleUnit\":', int(steps('hubs').hub4.vpnScaleUnits), '}', ',\"expressRouteParameters\":{\"deployExpressRouteGateway\":', steps('hubs').hub4.deployExpressRouteGateway, ',\"expressRouteGatewayName\":\"', concat(steps('hubs').hub4.hubName, '-er'), '\",\"autoScaleConfigurationBoundsMin\":', int(steps('hubs').hub4.expressRouteMinScaleUnits), ',\"autoScaleConfigurationBoundsMax\":', int(steps('hubs').hub4.expressRouteMaxScaleUnits), '},\"ruleCollectionGroups\":[],\"tags\":{}}')), '') , ']'))]",
+        "policyMode": "[steps('policies').policyMode]",
+        "firewallTier": "[steps('policies').firewallTier]",
+        "commonPolicyName": "[if(equals(steps('policies').policyMode, 'Separate'), concat(steps('network').virtualWanName, '-policy'), steps('policies').commonPolicyName)]",
+        "commonPolicyLocation": "[coalesce(steps('policies').commonPolicyRegion.name, steps('basics').resourceScope.location.name)]",
+        "commonRuleCollectionGroups": [],
+        "threatIntelMode": "[steps('policies').threatIntelMode]",
+        "enableDnsProxy": "[bool(steps('policies').enableDnsProxy)]",
+        "tags": {
+          "owner": "elrehan-academy"
+        },
+        "enableLogging": "[bool(steps('monitoring').enableLogging)]",
+        "enableWorkbook": "[and(bool(steps('monitoring').enableLogging), bool(steps('monitoring').enableWorkbook))]",
+        "workspaceName": "[steps('monitoring').workspaceName]",
+        "workspaceLocation": "[coalesce(steps('monitoring').workspaceRegion.name, steps('basics').resourceScope.location.name)]",
+        "logRetentionDays": "[int(steps('monitoring').logRetentionDays)]",
+        "workbookDisplayNamePrefix": "[steps('monitoring').workbookDisplayNamePrefix]"
+      }
+    }
+  }
+}

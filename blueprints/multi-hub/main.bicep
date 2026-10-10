@@ -19,7 +19,6 @@ type hubConfiguration = {
   expressRouteParameters: object?
 }
 
-
 @description('Name of the Standard Virtual WAN.')
 @minLength(1)
 param virtualWanName string
@@ -97,7 +96,7 @@ var configuredHubs = [for hub in hubs: {
   inspectionMode: hub.?inspectionMode ?? 'Both'
   firewallName: hub.?firewallName ?? '${hub.hubName}-fw'
   firewallPolicyName: hub.?firewallPolicyName ?? '${hub.hubName}-policy'
-  firewallPolicyLocation: hub.?firewallPolicyLocation ?? hub.hubLocation
+  firewallPolicyLocation: hub.?firewallPolicyLocation ?? (policyMode == 'ParentChildren' ? commonPolicyLocation : hub.hubLocation)
   firewallPublicIpCount: hub.?firewallPublicIpCount ?? 1
   firewallZones: hub.?firewallZones ?? []
   ruleCollectionGroups: hub.?ruleCollectionGroups ?? []
@@ -182,7 +181,6 @@ module network '../../modules/network.bicep' = {
   ]
 }
 
-
 var loggingEnabled = enableLogging && length(securedHubs) > 0
 
 resource workspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = if (loggingEnabled) {
@@ -201,7 +199,6 @@ resource workspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = if (l
     publicNetworkAccessForQuery: 'Enabled'
   }
 }
-
 
 resource firewalls 'Microsoft.Network/azureFirewalls@2025-05-01' existing = [for hub in securedHubs: {
   name: hub.firewallName
@@ -231,7 +228,7 @@ resource firewallDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-p
   ]
 }]
 
-module observability '../../modules/observability/main.bicep' = [for (hub, index) in securedHubs: if (loggingEnabled && enableWorkbook) {
+module observability '../../modules/observability/multi-hub/main.bicep' = [for (hub, index) in securedHubs: if (loggingEnabled && enableWorkbook) {
   name: 'multi-hub-observability-${uniqueString(resourceGroup().id, hub.hubName)}'
   params: {
     workbookName: guid(resourceGroup().id, virtualWanName, hub.hubName, 'firewall-observability')
@@ -249,6 +246,52 @@ module observability '../../modules/observability/main.bicep' = [for (hub, index
 output virtualWanResourceId string = network.outputs.virtualWanResourceId
 output virtualHubs array = network.outputs.virtualHubs
 output selectedPolicyMode string = policyMode
+output firewallTier string = firewallTier
 output workspaceResourceId string = loggingEnabled ? workspace!.id : ''
 output firewallResourceIds array = [for hub in securedHubs: resourceId('Microsoft.Network/azureFirewalls', hub.firewallName)]
+output policyResourceIds array = [for hub in securedHubs: policyMode == 'Shared'
+  ? resourceId('Microsoft.Network/firewallPolicies', commonPolicyName)
+  : resourceId('Microsoft.Network/firewallPolicies', hub.firewallPolicyName)]
 output workbookResourceIds array = [for (hub, index) in securedHubs: loggingEnabled && enableWorkbook ? observability[index]!.outputs.resourceId : '']
+output securedHubNames array = [for hub in securedHubs: hub.hubName]
+output hubSummary array = [for hub in configuredHubs: {
+  hubName: hub.hubName
+  hubLocation: hub.hubLocation
+  hubAddressPrefix: hub.hubAddressPrefix
+  inspectionMode: hub.inspectionMode
+  firewallName: hub.inspectionMode != 'Disabled' ? hub.firewallName : ''
+  policyName: hub.inspectionMode != 'Disabled' ? (policyMode == 'Shared' ? commonPolicyName : hub.firewallPolicyName) : ''
+}]
+
+@description('One mapping for each hub, including unsecured hubs. Empty fields mean the feature was not deployed.')
+output hubResources array = [for hub in configuredHubs: {
+  hubName: hub.hubName
+  location: hub.hubLocation
+  addressPrefix: hub.hubAddressPrefix
+  inspectionMode: hub.inspectionMode
+  hubResourceId: resourceId('Microsoft.Network/virtualHubs', hub.hubName)
+  firewallResourceId: hub.inspectionMode != 'Disabled' ? resourceId('Microsoft.Network/azureFirewalls', hub.firewallName) : ''
+  policyResourceId: hub.inspectionMode != 'Disabled' ? resourceId('Microsoft.Network/firewallPolicies', policyMode == 'Shared' ? commonPolicyName : hub.firewallPolicyName) : ''
+  parentPolicyResourceId: hub.inspectionMode != 'Disabled' && policyMode == 'ParentChildren' ? resourceId('Microsoft.Network/firewallPolicies', commonPolicyName) : ''
+  workspaceResourceId: loggingEnabled && hub.inspectionMode != 'Disabled' ? workspace!.id : ''
+  workbookResourceId: loggingEnabled && enableWorkbook && hub.inspectionMode != 'Disabled' ? resourceId('Microsoft.Insights/workbooks', guid(resourceGroup().id, virtualWanName, hub.hubName, 'firewall-observability')) : ''
+  workbookUrl: loggingEnabled && enableWorkbook && hub.inspectionMode != 'Disabled' ? 'https://portal.azure.com/#resource${resourceId('Microsoft.Insights/workbooks', guid(resourceGroup().id, virtualWanName, hub.hubName, 'firewall-observability'))}' : ''
+}]
+
+module consolidatedObservability '../../modules/observability/multi-hub/consolidated.bicep' = if (loggingEnabled && enableWorkbook) {
+  name: 'multi-hub-consolidated-observability'
+  params: {
+    workbookName: guid(resourceGroup().id, virtualWanName, 'all-firewalls', 'firewall-observability')
+    location: workspaceLocation
+    workspaceResourceId: workspace!.id
+    firewallResourceIds: [for hub in securedHubs: resourceId('Microsoft.Network/azureFirewalls', hub.firewallName)]
+    displayName: '${workbookDisplayNamePrefix} - All Firewalls'
+    tags: tags
+  }
+  dependsOn: [
+    firewallDiagnostics
+  ]
+}
+
+output consolidatedWorkbookResourceId string = loggingEnabled && enableWorkbook ? consolidatedObservability!.outputs.resourceId : ''
+output consolidatedWorkbookUrl string = loggingEnabled && enableWorkbook ? consolidatedObservability!.outputs.portalUrl : ''
