@@ -25,10 +25,10 @@ suitability has not been established.
 | Option | Scope | Current status |
 | --- | --- | --- |
 | **Single Hub** | One regional hub with optional firewall inspection, gateways and monitoring | Portal deployment succeeded in lab testing |
-| **Multi-Hub** | Two to four hubs with per-hub inspection and shared, separate or parent/child firewall policies | Bicep draft; compilation and offline configuration checks passed |
+| **Multi-Hub** | Two to four hubs with per-hub inspection and shared, separate or parent/child firewall policies | Development preview; portal deployment validation pending |
 
 Use the guided CLI workflow to validate traffic through an existing Single Hub.
-Multi-Hub deployment and cross-hub traffic validation are pending.
+Multi-Hub workloads and traffic validation use the separate manual guide.
 
 ## Deploy Single Hub
 
@@ -51,28 +51,30 @@ workspace and firewall diagnostics. Workbook deployment is optional.
 VPN and ExpressRoute gateways are optional and disabled by default.
 Branch and circuit connections require additional configuration.
 
-## Prepare Multi-Hub
+## Deploy Multi-Hub
 
-The draft blueprint creates one Standard Virtual WAN with **two to four
-hubs**. Each hub has its own region, address prefix, inspection mode and
-optional tags. Enabled firewalls use a common selected tier.
+Deploy one Standard Virtual WAN with **two to four regional hubs** in a
+new dedicated resource group. Configure hub regions, private /22 prefixes,
+inspection, Standard or Premium firewalls and optional gateways.
 
-Choose one policy design:
+**Development preview:** deployment creates billable Azure resources.
+Review settings before selecting Create. Live portal deployment and
+workbook validation remain pending.
 
-| Mode | Policy design |
-| --- | --- |
-| **Shared** | One policy attached to all enabled firewalls |
-| **Separate** | An independent policy for each enabled firewall |
-| **ParentChildren** | A common parent with a child policy for each enabled firewall |
+[![Deploy Multi-Hub to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2Fdf497d7b61f791cae82f5ee064195e0e378c947c%2Fportal%2Fmulti-hub%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2Fdf497d7b61f791cae82f5ee064195e0e378c947c%2Fportal%2Fmulti-hub%2FuiFormDefinition.json)
 
-The monitoring draft uses one shared workspace and a workbook for each
-enabled firewall. All resources are deployed into one resource group.
+Choose ParentChildren, Shared or Separate policies. ParentChildren assigns
+all child policies to the parent policy region; hub regions remain independent.
+VPN and ExpressRoute gateways are optional and disabled by default.
 
-Read the [Multi-Hub draft guide](docs/MULTI-HUB.md) for configuration
-examples, validation commands and current limitations.
+Monitoring uses one shared workspace, one workbook per secured hub and
+one consolidated All Firewalls workbook. Assessment starts as Not assessed.
 
-**No Multi-Hub portal button is published yet.** The existing CLI testing
-and report-publication workflow is not yet validated for Multi-Hub.
+Follow the [portal guide](docs/MULTI-HUB-PORTAL.md) or
+[CLI deployment guide](docs/multi-hub/DEPLOYMENT.md).
+Create workloads and connections separately using the
+[manual testing guide](docs/multi-hub/MANUAL-TESTING.md).
+See the [cleanup guide](docs/multi-hub/CLEANUP.md) for removal.
 
 ## Test an existing Single Hub
 
@@ -195,4 +197,4 @@ Source revision, modifications and license information are recorded in
 | --- | --- |
 | [Configuration](docs/CONFIGURATION.md) | Architecture, components and configuration guidance |
 | [CLI testing and cleanup](docs/TESTING.md) | Guided setup, commands, success criteria and removal |
-| [Multi-Hub draft](docs/MULTI-HUB.md) | Policy modes, examples, offline checks and remaining validation |
+| [Multi-Hub](docs/MULTI-HUB.md) | Policy modes, examples, offline checks and remaining validation |
