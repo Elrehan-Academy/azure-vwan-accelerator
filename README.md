@@ -66,7 +66,7 @@ Review settings before selecting Create. The two-hub ParentChildren
 configuration has passed portal provisioning and workbook checks.
 Other combinations require validation in your environment.
 
-[![Deploy Multi-Hub to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2Fdf497d7b61f791cae82f5ee064195e0e378c947c%2Fportal%2Fmulti-hub%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2Fdf497d7b61f791cae82f5ee064195e0e378c947c%2Fportal%2Fmulti-hub%2FuiFormDefinition.json)
+[![Deploy Multi-Hub to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2F4ba579f8ba038c6ad5f796a912f129fe6cc0866d%2Fportal%2Fmulti-hub%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2F4ba579f8ba038c6ad5f796a912f129fe6cc0866d%2Fportal%2Fmulti-hub%2FuiFormDefinition.json)
 
 Choose ParentChildren, Shared or Separate policies. ParentChildren assigns
 all child policies to the parent policy region; hub regions remain independent.
