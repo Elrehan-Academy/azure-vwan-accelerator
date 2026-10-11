@@ -2,7 +2,7 @@
   <img src="docs/assets/elrehan-academy-logo.png" alt="Elrehan Academy" width="400">
 </p>
 
-# Azure Virtual WAN Accelerator
+# Azure Virtual WAN Accelerator — Azure Firewall
 
 **Free cloud networking education through hands-on automation.**
 
@@ -17,6 +17,10 @@ Azure Firewall inspection and firewall observability. Use the CLI test
 workflow to create temporary workloads, generate traffic and verify
 firewall decisions against recorded logs.
 
+This edition uses **Microsoft Azure Firewall Standard or Premium** for
+inspection. Palo Alto and other firewall vendors are not included in these
+deployment options.
+
 This project supports hands-on learning and lab validation. Production
 suitability has not been established.
 
@@ -25,7 +29,7 @@ suitability has not been established.
 | Option | Scope | Current status |
 | --- | --- | --- |
 | **Single Hub** | One regional hub with optional firewall inspection, gateways and monitoring | Portal deployment succeeded in lab testing |
-| **Multi-Hub** | Two to four hubs with per-hub inspection and shared, separate or parent/child firewall policies | Development preview; portal deployment validation pending |
+| **Multi-Hub** | Two to four hubs with per-hub inspection and shared, separate or parent/child firewall policies | Two-hub ParentChildren portal deployment and workbook checks passed in lab testing |
 
 Use the guided CLI workflow to validate traffic through an existing Single Hub.
 Multi-Hub workloads and traffic validation use the separate manual guide.
@@ -55,11 +59,12 @@ Branch and circuit connections require additional configuration.
 
 Deploy one Standard Virtual WAN with **two to four regional hubs** in a
 new dedicated resource group. Configure hub regions, private /22 prefixes,
-inspection, Standard or Premium firewalls and optional gateways.
+inspection, Microsoft Azure Firewall Standard or Premium, and optional gateways.
 
 **Development preview:** deployment creates billable Azure resources.
-Review settings before selecting Create. Live portal deployment and
-workbook validation remain pending.
+Review settings before selecting Create. The two-hub ParentChildren
+configuration has passed portal provisioning and workbook checks.
+Other combinations require validation in your environment.
 
 [![Deploy Multi-Hub to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2Fdf497d7b61f791cae82f5ee064195e0e378c947c%2Fportal%2Fmulti-hub%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2Fdf497d7b61f791cae82f5ee064195e0e378c947c%2Fportal%2Fmulti-hub%2FuiFormDefinition.json)
 
@@ -197,4 +202,4 @@ Source revision, modifications and license information are recorded in
 | --- | --- |
 | [Configuration](docs/CONFIGURATION.md) | Architecture, components and configuration guidance |
 | [CLI testing and cleanup](docs/TESTING.md) | Guided setup, commands, success criteria and removal |
-| [Multi-Hub](docs/MULTI-HUB.md) | Policy modes, examples, offline checks and remaining validation |
+| [Multi-Hub](docs/MULTI-HUB.md) | Portal and CLI deployment, policy modes, monitoring and manual testing |

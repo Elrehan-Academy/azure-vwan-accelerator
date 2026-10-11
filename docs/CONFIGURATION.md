@@ -12,9 +12,10 @@ After deployment, use the [CLI test guide](TESTING.md) to create temporary
 workloads, verify traffic decisions and logs, publish an assessment and
 remove the test resources.
 
-A separate [Multi-Hub draft](MULTI-HUB.md) provides code-based configuration
-for two to four hubs. It has no published portal button, and the Single-Hub
-test workflow does not validate cross-hub traffic.
+The [Multi-Hub guide](MULTI-HUB.md) covers portal and CLI deployment of
+two to four hubs using Microsoft Azure Firewall Standard or Premium.
+Multi-Hub workloads and traffic validation follow the separate manual guide;
+the Single-Hub test workflow does not validate cross-hub traffic.
 
 ## Single-hub architecture
 

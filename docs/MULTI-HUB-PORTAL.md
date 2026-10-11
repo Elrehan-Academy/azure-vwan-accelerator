@@ -1,4 +1,6 @@
-# Elrehan Academy — Multi-Hub portal deployment
+# Elrehan Academy — Multi-Hub portal deployment — Azure Firewall
+
+This edition uses Microsoft Azure Firewall Standard or Premium for secured hubs. Palo Alto and other firewall vendors are not included.
 
 Deploy the Multi-Hub core infrastructure using the Azure portal form. Create application VNets, workloads, hub connections and workload firewall rules separately after deployment.
 

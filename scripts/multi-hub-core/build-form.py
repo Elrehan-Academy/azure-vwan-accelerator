@@ -176,7 +176,7 @@ def build():
         'workspaceLocation':expr("coalesce("+ref('monitoring','workspaceRegion.name')+", "+ref('basics','resourceScope.location.name')+")"),
         'logRetentionDays':expr("int(if(empty("+ref('monitoring','logRetentionDays')+"), '30', "+ref('monitoring','logRetentionDays')+"))"),
         'workbookDisplayNamePrefix':expr(ref('monitoring','workbookDisplayNamePrefix'))}
-    return {'$schema':SCHEMA,'view':{'kind':'Form','properties':{'title':'Elrehan Academy — Azure vWAN Multi-Hub','steps':[basics,network,policies,hubs,monitoring,review]},'outputs':{'kind':'ResourceGroup','location':expr(ref('basics','resourceScope.location.name')),'resourceGroupId':expr(ref('basics','resourceScope.resourceGroup.id')),'parameters':parameters}}}
+    return {'$schema':SCHEMA,'view':{'kind':'Form','properties':{'title':'Elrehan Academy — Azure vWAN Multi-Hub — Azure Firewall','steps':[basics,network,policies,hubs,monitoring,review]},'outputs':{'kind':'ResourceGroup','location':expr(ref('basics','resourceScope.location.name')),'resourceGroupId':expr(ref('basics','resourceScope.resourceGroup.id')),'parameters':parameters}}}
 
 if __name__ == '__main__':
     root=Path(__file__).resolve().parents[2]

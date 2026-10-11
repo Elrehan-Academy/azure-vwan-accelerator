@@ -1,4 +1,6 @@
-# Elrehan Academy — Multi-Hub configuration
+# Elrehan Academy — Multi-Hub configuration — Azure Firewall
+
+This edition uses Microsoft Azure Firewall Standard or Premium for secured hubs. Palo Alto and other firewall vendors are not included.
 
 `multi-hub.local.json` contains the settings collected by the wizard. The CLI tools use the shared configuration validator; the portal form has its own input checks. Unknown fields, conflicting names, overlapping
 prefixes, incompatible rules and invalid gateway bounds are rejected.

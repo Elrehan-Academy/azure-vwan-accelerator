@@ -1,4 +1,6 @@
-# Elrehan Academy — Multi-Hub deployment
+# Elrehan Academy — Multi-Hub deployment — Azure Firewall
+
+This edition uses Microsoft Azure Firewall Standard or Premium for secured hubs. Palo Alto and other firewall vendors are not included.
 
 ## Prerequisites
 
