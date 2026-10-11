@@ -13,9 +13,9 @@ automation and guided practical exercises. The learning materials are
 free; Azure resources deployed in your subscription incur charges.
 
 Deploy Azure Virtual WAN networking with reusable Bicep modules, optional
-Azure Firewall inspection and firewall observability. Use the CLI test
-workflow to create temporary workloads, generate traffic and verify
-firewall decisions against recorded logs.
+Azure Firewall inspection and firewall observability. Choose Single Hub
+for guided automated traffic testing, or Multi-Hub for core provisioning
+with separate manual workload testing.
 
 This edition uses **Microsoft Azure Firewall Standard or Premium** for
 inspection. Palo Alto and other firewall vendors are not included in these
@@ -55,33 +55,7 @@ workspace and firewall diagnostics. Workbook deployment is optional.
 VPN and ExpressRoute gateways are optional and disabled by default.
 Branch and circuit connections require additional configuration.
 
-## Deploy Multi-Hub
-
-Deploy one Standard Virtual WAN with **two to four regional hubs** in a
-new dedicated resource group. Configure hub regions, private /22 prefixes,
-inspection, Microsoft Azure Firewall Standard or Premium, and optional gateways.
-
-**Development preview:** deployment creates billable Azure resources.
-Review settings before selecting Create. The two-hub ParentChildren
-configuration has passed portal provisioning and workbook checks.
-Other combinations require validation in your environment.
-
-[![Deploy Multi-Hub to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2F4ba579f8ba038c6ad5f796a912f129fe6cc0866d%2Fportal%2Fmulti-hub%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2F4ba579f8ba038c6ad5f796a912f129fe6cc0866d%2Fportal%2Fmulti-hub%2FuiFormDefinition.json)
-
-Choose ParentChildren, Shared or Separate policies. ParentChildren assigns
-all child policies to the parent policy region; hub regions remain independent.
-VPN and ExpressRoute gateways are optional and disabled by default.
-
-Monitoring uses one shared workspace, one workbook per secured hub and
-one consolidated All Firewalls workbook. Assessment starts as Not assessed.
-
-Follow the [portal guide](docs/MULTI-HUB-PORTAL.md) or
-[CLI deployment guide](docs/multi-hub/DEPLOYMENT.md).
-Create workloads and connections separately using the
-[manual testing guide](docs/multi-hub/MANUAL-TESTING.md).
-See the [cleanup guide](docs/multi-hub/CLEANUP.md) for removal.
-
-## Test an existing Single Hub
+### Test Single Hub automatically
 
 Follow the [CLI test and cleanup guide](docs/TESTING.md).
 
@@ -137,7 +111,7 @@ Successful runs can remove test resources automatically. If a stage fails,
 the workflow stops and retains resources for investigation and explicit
 cleanup. Testing temporarily changes hub connections and firewall rules.
 
-## Observe and assess
+### Single-Hub monitoring and assessment
 
 The workbook includes network and application traffic tables showing
 source, destination, ports, actions and rule details. FQDN and URL fields
@@ -150,7 +124,81 @@ NIST assessment or compliance certification.
 Premium firewall selection alone does not configure TLS inspection or IDPS.
 The current web probes use HTTP; they do not validate HTTPS inspection.
 
-## Update and remove resources
+### Single-Hub cleanup
+
+With `--cleanup-after`, a successful test removes its owned hub connections,
+temporary firewall rules and test resource group. The core deployment remains.
+If a stage fails, use the explicit cleanup instructions in the
+[Single-Hub test guide](docs/TESTING.md).
+
+To remove the whole lab, retain required evidence, remove test resources,
+then delete the dedicated core resource group and confirm deletion completes.
+
+## Deploy Multi-Hub
+
+Deploy one Standard Virtual WAN with **two to four regional hubs** in a
+new dedicated resource group. Configure hub regions, private /22 prefixes,
+inspection, Microsoft Azure Firewall Standard or Premium, and optional gateways.
+
+**Development preview:** deployment creates billable Azure resources.
+Review settings before selecting Create. The two-hub ParentChildren
+configuration has passed portal provisioning and workbook checks.
+Other combinations require validation in your environment.
+
+[![Deploy Multi-Hub to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2F4ba579f8ba038c6ad5f796a912f129fe6cc0866d%2Fportal%2Fmulti-hub%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Fazure-vwan-accelerator%2F4ba579f8ba038c6ad5f796a912f129fe6cc0866d%2Fportal%2Fmulti-hub%2FuiFormDefinition.json)
+
+Choose ParentChildren, Shared or Separate policies. ParentChildren assigns
+all child policies to the parent policy region; hub regions remain independent.
+VPN and ExpressRoute gateways are optional and disabled by default.
+
+Monitoring uses one shared workspace, one workbook per secured hub and
+one consolidated All Firewalls workbook. Assessment starts as Not assessed.
+
+Follow the [portal guide](docs/MULTI-HUB-PORTAL.md) or
+[CLI deployment guide](docs/multi-hub/DEPLOYMENT.md).
+Create workloads and connections separately using the
+[manual testing guide](docs/multi-hub/MANUAL-TESTING.md).
+See the [cleanup guide](docs/multi-hub/CLEANUP.md) for removal.
+
+### Test Multi-Hub manually
+
+Follow the [Multi-Hub manual testing guide](docs/multi-hub/MANUAL-TESTING.md):
+
+1. Create workload VNets and test VMs in the selected regions.
+2. Connect the workload VNets to their corresponding hubs.
+3. Add explicit Azure Firewall Allow/Deny rules in the appropriate policies.
+4. Test within-hub, cross-hub and internet traffic for your inspection modes.
+5. Match probe results with the expected firewall Allow/Deny logs.
+6. Retain evidence, then remove test workloads, connections and temporary rules.
+
+The Multi-Hub core package creates infrastructure and monitoring. Workloads,
+traffic generation and evidence collection are performed separately.
+The Single-Hub automated harness does not validate cross-hub traffic.
+
+### Multi-Hub monitoring and assessment
+
+All secured hubs send diagnostics to one shared Log Analytics workspace.
+Each per-hub workbook selects its own firewall; the additional
+**All Firewalls** workbook selects all deployed firewalls for centralized
+traffic investigation. Network and application views show details available
+in the recorded logs.
+
+Per-hub assessment starts as **Not assessed** until a separate process supplies
+assessment evidence. Manual traffic testing does not automatically publish
+an assessment snapshot. The consolidated workbook displays a Not assessed
+notice and does not aggregate firewall assessment scores.
+
+### Multi-Hub cleanup
+
+Use the [Multi-Hub cleanup guide](docs/multi-hub/CLEANUP.md).
+Remove manual test workloads, connections and temporary rules first.
+
+For portal deployments, review and delete the dedicated core resource group.
+For CLI deployments, use the ownership-checked removal tool with the retained
+local configuration and state. Save required evidence before deleting the
+workspace, and verify deletion completes.
+
+## Infrastructure updates
 
 Bicep deployments can update resources with matching names and identities.
 Review the target subscription, resource group and changes before deploying
@@ -159,16 +207,6 @@ into an existing environment.
 Changing inspection mode to Disabled does not automatically delete an
 existing firewall or its related resources. Removing a hub from an input
 list does not provide an automatic resource-removal workflow.
-
-The [cleanup guide](docs/TESTING.md) distinguishes:
-
-- **Test cleanup:** remove owned test connections, temporary firewall rules
-  and the dedicated test resource group.
-- **Full lab cleanup:** after test cleanup and evidence retention, explicitly
-  delete the dedicated core resource group.
-
-Full resource-group deletion removes every resource in that group.
-Resources in other groups require separate cleanup.
 
 ## Costs and responsibility
 
@@ -198,8 +236,7 @@ Source revision, modifications and license information are recorded in
 
 ## Documentation
 
-| Guide | Contents |
-| --- | --- |
-| [Configuration](docs/CONFIGURATION.md) | Architecture, components and configuration guidance |
-| [CLI testing and cleanup](docs/TESTING.md) | Guided setup, commands, success criteria and removal |
-| [Multi-Hub](docs/MULTI-HUB.md) | Portal and CLI deployment, policy modes, monitoring and manual testing |
+| Deployment | Configuration and deployment | Testing | Cleanup |
+| --- | --- | --- | --- |
+| Single Hub | [Configuration guide](docs/CONFIGURATION.md) | [Automated CLI testing](docs/TESTING.md) | [Test and lab cleanup](docs/TESTING.md) |
+| Multi-Hub | [Overview](docs/MULTI-HUB.md), [portal guide](docs/MULTI-HUB-PORTAL.md), [CLI guide](docs/multi-hub/DEPLOYMENT.md), [configuration](docs/multi-hub/CONFIGURATION.md) | [Manual workload testing](docs/multi-hub/MANUAL-TESTING.md) | [Core and workload cleanup](docs/multi-hub/CLEANUP.md) |
